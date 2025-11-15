@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Click Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="p-8">
+    <h1 class="text-2xl font-bold mb-4">Click Test - Paste this in Console</h1>
+    
+    <div class="bg-gray-100 p-4 rounded mb-4">
+        <p class="font-bold mb-2">Step 1: Paste this in Console (F12):</p>
+        <pre class="bg-white p-2 rounded text-sm overflow-x-auto">
+// Find all wishlist buttons
+const buttons = document.querySelectorAll('.wishlist-btn');
+console.log('Found buttons:', buttons.length);
+
+buttons.forEach((btn, i) => {
+    console.log(`\n=== Button ${i} ===`);
+    console.log('Element:', btn);
+    
+    const rect = btn.getBoundingClientRect();
+    console.log('Position:', {
+        top: rect.top,
+        left: rect.left,
+        width: rect.width,
+        height: rect.height
+    });
+    
+    const styles = window.getComputedStyle(btn);
+    console.log('Z-index:', styles.zIndex);
+    console.log('Pointer events:', styles.pointerEvents);
+    console.log('Display:', styles.display);
+    console.log('Visibility:', styles.visibility);
+    
+    // Check what element is at button position
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const elementAtPoint = document.elementFromPoint(centerX, centerY);
+    console.log('Element at button center:', elementAtPoint);
+    console.log('Is it the button?', elementAtPoint === btn || btn.contains(elementAtPoint));
+});
+        </pre>
+    </div>
+    
+    <div class="bg-yellow-100 p-4 rounded mb-4">
+        <p class="font-bold mb-2">Step 2: If button is blocked, try this fix:</p>
+        <pre class="bg-white p-2 rounded text-sm overflow-x-auto">
+// Force make buttons clickable
+document.querySelectorAll('.wishlist-btn').forEach(btn => {
+    btn.style.zIndex = '99999';
+    btn.style.position = 'relative';
+    btn.style.pointerEvents = 'auto';
+    
+    // Remove any overlay
+    const parent = btn.closest('.relative');
+    if (parent) {
+        parent.style.overflow = 'visible';
+    }
+});
+
+console.log('✅ Buttons should be clickable now!');
+        </pre>
+    </div>
+    
+    <div class="bg-green-100 p-4 rounded">
+        <p class="font-bold mb-2">Step 3: Test click manually:</p>
+        <pre class="bg-white p-2 rounded text-sm overflow-x-auto">
+// Click first button
+document.querySelector('.wishlist-btn').click();
+        </pre>
+    </div>
+</body>
+</html>

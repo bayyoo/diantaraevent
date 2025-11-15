@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test CSRF Token Refresh</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6">
+        <h1 class="text-2xl font-bold mb-4">🧪 Test CSRF Token Refresh</h1>
+        
+        <div class="space-y-4">
+            <div>
+                <button onclick="testCsrfEndpoint()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                    Test CSRF Endpoint
+                </button>
+            </div>
+            
+            <div id="result" class="p-4 bg-gray-50 rounded border border-gray-200 hidden">
+                <h3 class="font-semibold mb-2">Result:</h3>
+                <pre id="output" class="text-sm"></pre>
+            </div>
+            
+            <div class="border-t pt-4">
+                <h3 class="font-semibold mb-2">Instructions:</h3>
+                <ol class="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                    <li>Make sure Laravel server is running (php artisan serve)</li>
+                    <li>Click "Test CSRF Endpoint" button</li>
+                    <li>Check if response contains csrf_token and timestamp</li>
+                    <li>Open browser console (F12) to see detailed logs</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function testCsrfEndpoint() {
+            const resultDiv = document.getElementById('result');
+            const outputPre = document.getElementById('output');
+            
+            resultDiv.classList.remove('hidden');
+            outputPre.textContent = 'Loading...';
+            
+            try {
+                const response = await fetch('http://127.0.0.1:8000/csrf-token', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    outputPre.textContent = JSON.stringify(data, null, 2);
+                    console.log('✅ CSRF Token Response:', data);
+                    
+                    // Show success
+                    resultDiv.classList.remove('bg-gray-50', 'border-gray-200');
+                    resultDiv.classList.add('bg-green-50', 'border-green-200');
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                outputPre.textContent = `❌ Error: ${error.message}`;
+                console.error('Error testing CSRF endpoint:', error);
+                
+                // Show error
+                resultDiv.classList.remove('bg-gray-50', 'border-gray-200');
+                resultDiv.classList.add('bg-red-50', 'border-red-200');
+            }
+        }
+    </script>
+</body>
+</html>

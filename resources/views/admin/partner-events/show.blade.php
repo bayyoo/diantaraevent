@@ -1,0 +1,92 @@
+@extends('admin.layout')
+
+@section('title', 'Partner Event Detail')
+
+@section('content')
+<div class="container mx-auto p-6">
+    <div class="mb-4">
+        <a href="{{ route('admin.partner-events.index') }}" class="px-3 py-2 border rounded text-sm">← Kembali</a>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white p-6 rounded border">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold">{{ $event->title }}</h1>
+                        <div class="text-sm text-gray-600 mt-1">{{ $event->organization->name ?? '-' }} • {{ $event->partner->name ?? '-' }}</div>
+                    </div>
+                    <div>
+                        @php $status = strtoupper($event->status); @endphp
+                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-semibold {{ $event->status === 'pending_review' ? 'bg-yellow-100 text-yellow-800' : ($event->status === 'published' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800') }}">{{ $status }}</span>
+                    </div>
+                </div>
+                <div class="mt-4 text-gray-700 whitespace-pre-line">{{ $event->description }}</div>
+            </div>
+
+            <div class="bg-white p-6 rounded border">
+                <h3 class="font-semibold mb-3">Detail</h3>
+                <ul class="text-sm text-gray-700 space-y-1">
+                    <li><strong>Kategori:</strong> {{ $event->category }}</li>
+                    <li><strong>Mulai:</strong> {{ \Carbon\Carbon::parse($event->start_date)->format('d M Y H:i') }}</li>
+                    <li><strong>Selesai:</strong> {{ \Carbon\Carbon::parse($event->end_date)->format('d M Y H:i') }}</li>
+                    <li><strong>Lokasi:</strong> {{ $event->location }}</li>
+                </ul>
+            </div>
+
+            @if($event->poster || $event->banners)
+            <div class="bg-white p-6 rounded border">
+                <h3 class="font-semibold mb-3">Media</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    @if($event->poster)
+                        <img src="{{ Storage::url($event->poster) }}" class="rounded border" alt="Poster">
+                    @endif
+                    @if($event->banners)
+                        @foreach(json_decode($event->banners, true) as $bn)
+                            <img src="{{ Storage::url($bn) }}" class="rounded border" alt="Banner">
+                        @endforeach
+                    @endif
+                </div>
+            </div>
+            @endif
+        </div>
+
+        <div class="space-y-6">
+            <div class="bg-white p-6 rounded border">
+                <h3 class="font-semibold mb-3">Tiket</h3>
+                @if($event->tickets->count())
+                    <div class="space-y-2">
+                        @foreach($event->tickets as $t)
+                            <div class="border rounded p-3 flex items-center justify-between">
+                                <div>
+                                    <div class="font-medium">{{ $t->name }}</div>
+                                    <div class="text-xs text-gray-600">Qty: {{ $t->quantity }} • Rp {{ number_format($t->price,0,',','.') }}</div>
+                                </div>
+                                <div class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($t->sale_start)->format('d M Y H:i') }} - {{ \Carbon\Carbon::parse($t->sale_end)->format('d M Y H:i') }}</div>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="text-sm text-gray-600">Belum ada tiket.</div>
+                @endif
+            </div>
+
+            <div class="bg-white p-6 rounded border">
+                <h3 class="font-semibold mb-3">Moderasi</h3>
+                <div class="flex space-x-2">
+                    <form method="POST" action="{{ route('admin.partner-events.approve', $event) }}">
+                        @csrf
+                        @method('PUT')
+                        <button type="submit" class="px-4 py-2 rounded bg-green-600 text-white">Approve</button>
+                    </form>
+                    <form method="POST" action="{{ route('admin.partner-events.reject', $event) }}">
+                        @csrf
+                        @method('PUT')
+                        <button type="submit" class="px-4 py-2 rounded bg-red-600 text-white">Reject</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
