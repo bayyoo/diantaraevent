@@ -100,12 +100,23 @@ class Event extends Model
         return $this->hasMany(EventCertificate::class);
     }
 
+    public function sessions(): HasMany
+    {
+        return $this->hasMany(EventSession::class)->orderBy('order_index');
+    }
+
     /**
      * Check if event has ended (for certificate generation)
      */
     public function hasEnded(): bool
     {
-        $eventEndTime = \Carbon\Carbon::parse($this->event_date . ' ' . $this->event_time)->addHours(3);
+        // If sessions exist, use last session end time
+        $lastSession = $this->sessions()->orderByDesc('end_at')->first();
+        if ($lastSession && $lastSession->end_at) {
+            return now()->greaterThan($lastSession->end_at);
+        }
+        // Fallback to original single date logic
+        $eventEndTime = \Carbon\Carbon::parse(($this->event_date ?? now()) . ' ' . ($this->event_time ?? '00:00:00'))->addHours(3);
         return now()->greaterThan($eventEndTime);
     }
 

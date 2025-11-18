@@ -22,13 +22,28 @@ class CertificateService
             return null;
         }
 
-        // Check if user attended the event
-        $attendance = EventAttendance::where('event_id', $event->id)
-            ->where('user_id', $user->id)
-            ->where('is_attended', true)
-            ->first();
+        // Check full attendance across sessions (if sessions exist)
+        $totalSessions = $event->sessions()->count();
+        if ($totalSessions > 0) {
+            $attendedSessions = \App\Models\EventAttendanceSession::where('event_id', $event->id)
+                ->where('user_id', $user->id)
+                ->count();
+            if ($attendedSessions < $totalSessions) {
+                return null; // not full attendance
+            }
+        } else {
+            // Fallback to original single attendance logic
+            $attendance = EventAttendance::where('event_id', $event->id)
+                ->where('user_id', $user->id)
+                ->where('is_attended', true)
+                ->first();
+            if (!$attendance) {
+                return null;
+            }
+        }
 
-        if (!$attendance) {
+        // Ensure event ended
+        if (!$event->hasEnded()) {
             return null;
         }
 
@@ -44,13 +59,8 @@ class CertificateService
         // Generate certificate
         $certificateNumber = EventCertificate::generateCertificateNumber();
         
-        if ($event->certificate_type === 'custom' && $event->certificate_file_path) {
-            // Use custom certificate template
-            $filePath = $this->generateCustomCertificate($event, $user, $certificateNumber);
-        } else {
-            // Use default template
-            $filePath = $this->generateDefaultCertificate($event, $user, $certificateNumber);
-        }
+        // Use selected template
+        $filePath = $this->renderSelectedTemplate($event, $user, $certificateNumber);
 
         // Save certificate record
         return EventCertificate::create([
@@ -68,15 +78,21 @@ class CertificateService
      */
     private function generateDefaultCertificate(Event $event, User $user, string $certificateNumber): string
     {
+        $org = $this->getOrganizationSignatureData($event);
         $data = [
             'event' => $event,
             'user' => $user,
             'certificate_number' => $certificateNumber,
             'generated_date' => Carbon::now()->format('d F Y'),
-            'event_date' => Carbon::parse($event->event_date)->format('d F Y')
+            'event_date' => Carbon::parse($event->event_date)->format('d F Y'),
+            'org' => $org,
         ];
 
-        $pdf = Pdf::loadView('certificates.default-template', $data);
+        $view = $event->certificate_template === 'template_b'
+            ? 'certificates.templates.template_b'
+            : 'certificates.templates.template_a';
+
+        $pdf = Pdf::loadView($view, $data);
         $pdf->setPaper('A4', 'landscape');
         
         $fileName = 'certificates/' . $certificateNumber . '.pdf';
@@ -90,17 +106,20 @@ class CertificateService
      */
     private function generateCustomCertificate(Event $event, User $user, string $certificateNumber): string
     {
-        // For custom certificates, we'll overlay text on the custom image/PDF
+        // For custom certificates, we'll overlay text/signatures on uploaded image/PDF-like background
+        $org = $this->getOrganizationSignatureData($event);
         $data = [
             'event' => $event,
             'user' => $user,
             'certificate_number' => $certificateNumber,
             'generated_date' => Carbon::now()->format('d F Y'),
             'event_date' => Carbon::parse($event->event_date)->format('d F Y'),
-            'custom_template_path' => $event->certificate_file_path
+            'custom_template_path' => $event->custom_certificate_path,
+            'org' => $org,
         ];
 
-        $pdf = Pdf::loadView('certificates.custom-template', $data);
+        // Reuse template A layout that displays background if provided
+        $pdf = Pdf::loadView('certificates.templates.template_a', $data);
         $pdf->setPaper('A4', 'landscape');
         
         $fileName = 'certificates/' . $certificateNumber . '.pdf';
@@ -114,10 +133,7 @@ class CertificateService
      */
     public function shouldGenerateCertificates(Event $event): bool
     {
-        // Generate certificates after event ends
-        $eventEndTime = Carbon::parse($event->event_date . ' ' . $event->event_time)->addHours(3); // Assume 3 hours duration
-        
-        return now()->greaterThan($eventEndTime) && $event->has_certificate;
+        return $event->has_certificate && $event->hasEnded();
     }
 
     /**
@@ -129,16 +145,26 @@ class CertificateService
             return 0;
         }
 
-        $attendances = EventAttendance::where('event_id', $event->id)
-            ->where('is_attended', true)
-            ->with('user')
-            ->get();
-
         $generated = 0;
-        foreach ($attendances as $attendance) {
-            $certificate = $this->generateCertificate($event, $attendance->user);
-            if ($certificate) {
-                $generated++;
+        // If sessions exist, use participants who have full session attendance
+        $totalSessions = $event->sessions()->count();
+        if ($totalSessions > 0) {
+            $userIds = \App\Models\EventAttendanceSession::select('user_id')
+                ->where('event_id', $event->id)
+                ->groupBy('user_id')
+                ->havingRaw('COUNT(*) >= ?', [$totalSessions])
+                ->pluck('user_id');
+            $users = User::whereIn('id', $userIds)->get();
+            foreach ($users as $user) {
+                if ($this->generateCertificate($event, $user)) { $generated++; }
+            }
+        } else {
+            $attendances = EventAttendance::where('event_id', $event->id)
+                ->where('is_attended', true)
+                ->with('user')
+                ->get();
+            foreach ($attendances as $attendance) {
+                if ($this->generateCertificate($event, $attendance->user)) { $generated++; }
             }
         }
 
@@ -151,5 +177,33 @@ class CertificateService
     public function getCertificateDownloadUrl(EventCertificate $certificate): string
     {
         return route('certificates.download', $certificate->id);
+    }
+
+    private function getOrganizationSignatureData(Event $event): array
+    {
+        $org = [];
+        if ($event->organization_id) {
+            $organization = \App\Models\PartnerOrganization::find($event->organization_id);
+            if ($organization) {
+                $org = [
+                    'signature1_name' => $organization->signature1_name,
+                    'signature1_title' => $organization->signature1_title,
+                    'signature1_image' => $organization->signature1_image,
+                    'signature2_name' => $organization->signature2_name,
+                    'signature2_title' => $organization->signature2_title,
+                    'signature2_image' => $organization->signature2_image,
+                    'stamp_image' => $organization->stamp_image,
+                ];
+            }
+        }
+        return $org;
+    }
+
+    private function renderSelectedTemplate(Event $event, User $user, string $certificateNumber): string
+    {
+        if ($event->certificate_template === 'custom' && $event->custom_certificate_path) {
+            return $this->generateCustomCertificate($event, $user, $certificateNumber);
+        }
+        return $this->generateDefaultCertificate($event, $user, $certificateNumber);
     }
 }

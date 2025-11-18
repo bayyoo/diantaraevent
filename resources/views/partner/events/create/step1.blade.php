@@ -120,6 +120,29 @@
                 </div>
             </div>
 
+            <!-- Event Sessions -->
+            <div class="bg-white rounded-xl p-6 border border-gray-200">
+                <div class="flex items-center justify-between mb-3">
+                    <h4 class="font-semibold text-gray-900">Event Sessions (Optional, multi-hari)</h4>
+                    <button type="button" id="add-session" class="text-sm text-nexus hover:text-nexus-dark">+ Tambah Sesi</button>
+                </div>
+                <p class="text-xs text-gray-500 mb-4">Tambahkan satu atau beberapa sesi. Sertifikat akan mensyaratkan hadir di semua sesi.</p>
+                <div id="sessions-list" class="space-y-3">
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-3 session-row">
+                        <div class="md:col-span-4">
+                            <input type="text" name="sessions[0][name]" class="w-full px-3 py-2 border rounded-lg" placeholder="Nama sesi (Hari 1)" />
+                        </div>
+                        <div class="md:col-span-4">
+                            <input type="datetime-local" name="sessions[0][start_at]" class="w-full px-3 py-2 border rounded-lg" />
+                        </div>
+                        <div class="md:col-span-4 flex gap-2">
+                            <input type="datetime-local" name="sessions[0][end_at]" class="w-full px-3 py-2 border rounded-lg" />
+                            <button type="button" class="px-3 py-2 border rounded remove-session hidden">Hapus</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Location -->
             <div>
                 <label for="location" class="block text-sm font-medium text-gray-700 mb-2">Venue Name *</label>
@@ -235,5 +258,45 @@
             }
         }
     });
+
+    // Sessions editor
+    (function(){
+        const list = document.getElementById('sessions-list');
+        const addBtn = document.getElementById('add-session');
+        function updateRemoveVisibility(){
+            const rows = list.querySelectorAll('.session-row');
+            rows.forEach((row, idx)=>{
+                const btn = row.querySelector('.remove-session');
+                if (btn) btn.classList.toggle('hidden', rows.length <= 1);
+            });
+        }
+        function addRow(){
+            const idx = list.querySelectorAll('.session-row').length;
+            const div = document.createElement('div');
+            div.className = 'grid grid-cols-1 md:grid-cols-12 gap-3 session-row';
+            div.innerHTML = `
+                <div class="md:col-span-4">
+                    <input type="text" name="sessions[${idx}][name]" class="w-full px-3 py-2 border rounded-lg" placeholder="Nama sesi (Hari ${idx+1})" />
+                </div>
+                <div class="md:col-span-4">
+                    <input type="datetime-local" name="sessions[${idx}][start_at]" class="w-full px-3 py-2 border rounded-lg" />
+                </div>
+                <div class="md:col-span-4 flex gap-2">
+                    <input type="datetime-local" name="sessions[${idx}][end_at]" class="w-full px-3 py-2 border rounded-lg" />
+                    <button type="button" class="px-3 py-2 border rounded remove-session">Hapus</button>
+                </div>`;
+            list.appendChild(div);
+            updateRemoveVisibility();
+        }
+        addBtn.addEventListener('click', addRow);
+        list.addEventListener('click', (e)=>{
+            if (e.target.classList.contains('remove-session')){
+                const row = e.target.closest('.session-row');
+                row.remove();
+                updateRemoveVisibility();
+            }
+        });
+        updateRemoveVisibility();
+    })();
 </script>
 @endsection

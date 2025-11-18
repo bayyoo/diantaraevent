@@ -214,6 +214,20 @@
                                         </div>
                                     </div>
 
+                                    <!-- Price Row -->
+                                    @php
+                                        $isFree = !$wishlist->event->price || $wishlist->event->price == 0;
+                                        $price = $isFree ? 0 : $wishlist->event->price;
+                                    @endphp
+                                    <div class="flex items-center justify-between pt-3 border-t border-gray-100 mb-4">
+                                        <span class="text-xs text-gray-500">Mulai dari</span>
+                                        @if($isFree)
+                                            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-600">Gratis</span>
+                                        @else
+                                            <span class="px-3 py-1 rounded-full text-xs font-semibold" style="background:#E8EAFF;color:#7681FF;">IDR {{ number_format($price / 1000, 0, ',', '.') }}K</span>
+                                        @endif
+                                    </div>
+
                                     <!-- Action Button -->
                                     <a href="{{ route('events.show', $wishlist->event) }}" class="block w-full text-center px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg text-sm font-medium transition-colors">
                                         Lihat Detail Event

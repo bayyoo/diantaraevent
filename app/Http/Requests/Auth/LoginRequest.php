@@ -50,6 +50,15 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        // Block login if email is not verified
+        if (! optional(Auth::user())->email_verified_at) {
+            Auth::logout();
+            RateLimiter::hit($this->throttleKey());
+            throw ValidationException::withMessages([
+                'email' => __('Akun belum terverifikasi. Silakan verifikasi email Anda terlebih dahulu.'),
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 

@@ -233,6 +233,22 @@
                                             </div>
                                         </div>
 
+                                        <!-- Attendance Progress -->
+                                        @php 
+                                            $totalSessions = $participant->event->sessions->count();
+                                            $attended = $attendanceCounts[$participant->event_id] ?? 0;
+                                        @endphp
+                                        <div class="mb-3">
+                                            @if($totalSessions > 0)
+                                                <div class="text-sm text-gray-700 mb-1">Progres Absensi: <strong>{{ $attended }}/{{ $totalSessions }}</strong></div>
+                                                <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                                                    <div class="bg-green-500 h-2" style="width: {{ max(0, min(100, $totalSessions ? ($attended/$totalSessions*100) : 0)) }}%"></div>
+                                                </div>
+                                            @else
+                                                <div class="text-sm text-gray-500">Event tanpa sesi (absen sekali)</div>
+                                            @endif
+                                        </div>
+
                                         <!-- Action Buttons -->
                                         <div class="flex items-center space-x-3">
                                             <a href="{{ route('events.show', $participant->event) }}" class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors">
@@ -243,19 +259,13 @@
                                                 Lihat Detail
                                             </a>
 
-                                            @if(!$participant->attended_at && $participant->event->event_date->isToday())
-                                                <a href="{{ route('attendance.show', $participant->event) }}" class="inline-flex items-center px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg text-sm font-medium transition-colors">
+                                            @php $certificate = $certificatesByEvent[$participant->event_id] ?? null; @endphp
+                                            @if($certificate)
+                                                <a href="{{ route('certificates.download', $certificate->id) }}" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors">
                                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                                     </svg>
-                                                    Absen Sekarang
-                                                </a>
-                                            @elseif($participant->attended_at)
-                                                <a href="{{ route('certificate.generate', $participant) }}" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors">
-                                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                                    </svg>
-                                                    Unduh Sertifikat
+                                                    Download Sertifikat
                                                 </a>
                                             @endif
 
@@ -265,6 +275,18 @@
                                                 Token: <span class="font-mono font-semibold text-gray-700">{{ $participant->token }}</span>
                                             </div>
                                         </div>
+
+                                        <!-- Testing: Session Check-in Buttons (dev) -->
+                                        @if(app()->environment('local'))
+                                            @if($totalSessions > 0)
+                                                <div class="mt-3 text-xs text-gray-500">Testing Check-in Sesi:</div>
+                                                <div class="flex flex-wrap gap-2 mt-1">
+                                                    @foreach($participant->event->sessions as $s)
+                                                        <button type="button" class="px-3 py-1 border rounded text-sm" onclick="checkinSession({{ $participant->event->id }}, {{ $s->id }}, this)">Sesi {{ $s->order_index ?? $loop->iteration }}</button>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+                                        @endif
                                     </div>
                                 </div>
                             </div>

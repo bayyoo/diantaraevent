@@ -171,6 +171,24 @@
                         @enderror
                     </div>
 
+                    <!-- Price -->
+                    <div>
+                        <label for="price" class="block text-sm font-medium text-gray-700 mb-2">
+                            Harga (Rp)
+                        </label>
+                        <input type="number" 
+                               id="price" 
+                               name="price" 
+                               value="{{ old('price') }}"
+                               min="0"
+                               step="1000"
+                               class="form-input w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary @error('price') border-red-500 @enderror"
+                               placeholder="Masukkan harga tiket, 0 untuk gratis">
+                        @error('price')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <!-- Flyer Upload -->
                     <div class="md:col-span-2">
                         <label for="flyer" class="block text-sm font-medium text-gray-700 mb-2">

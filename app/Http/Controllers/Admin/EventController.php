@@ -45,6 +45,7 @@ class EventController extends Controller
             'event_time' => 'nullable|date_format:H:i',
             'location' => 'required|string|max:255',
             'capacity' => 'nullable|integer|min:1',
+            'price' => 'nullable|numeric|min:0',
             'flyer' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ], [
             'event_date.after_or_equal' => 'Event hanya dapat dibuat minimal H-3 (3 hari) sebelum tanggal pelaksanaan.'
@@ -99,6 +100,7 @@ class EventController extends Controller
             'event_time' => 'nullable|date_format:H:i',
             'location' => 'required|string|max:255',
             'capacity' => 'nullable|integer|min:1',
+            'price' => 'nullable|numeric|min:0',
             'flyer' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ], [
             'event_date.after_or_equal' => 'Event hanya dapat diubah minimal H-3 (3 hari) sebelum tanggal pelaksanaan.'

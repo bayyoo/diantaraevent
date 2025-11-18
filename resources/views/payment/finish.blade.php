@@ -51,15 +51,15 @@
                 <ul class="space-y-2 text-blue-800">
                     <li class="flex items-start">
                         <span class="w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                        <span>Token kehadiran akan dikirim ke email Anda dalam 5-10 menit</span>
+                        <span>Token kehadiran dan QR code tiket akan dikirim ke email Anda dalam 5-10 menit</span>
                     </li>
                     <li class="flex items-start">
                         <span class="w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                        <span>Gunakan token untuk melakukan check-in pada hari event</span>
+                        <span>Gunakan token / QR code untuk melakukan check-in pada hari event</span>
                     </li>
                     <li class="flex items-start">
                         <span class="w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                        <span>Sertifikat akan tersedia setelah Anda hadir di event</span>
+                        <span>Sertifikat akan tersedia setelah Anda hadir di event sesuai ketentuan penyelenggara</span>
                     </li>
                 </ul>
             </div>
@@ -67,6 +67,17 @@
 
             <!-- Action Buttons -->
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                @if($participant && $participant->payment_status === 'paid')
+                    <a href="{{ route('ticket.view', $participant) }}" 
+                       class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors">
+                        Lihat E-Ticket
+                    </a>
+                    <a href="{{ route('ticket.download', $participant) }}" 
+                       class="bg-green-100 hover:bg-green-200 text-green-800 font-semibold py-3 px-6 rounded-lg transition-colors">
+                        Download E-Ticket (PDF)
+                    </a>
+                @endif
+
                 <a href="{{ route('home') }}" 
                    class="bg-[#7681FF] hover:bg-[#5A67D8] text-white font-semibold py-3 px-6 rounded-lg transition-colors">
                     Kembali ke Beranda

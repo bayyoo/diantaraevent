@@ -177,23 +177,14 @@
                         <!-- Laptop Mockup -->
                         <div class="relative">
                             <div class="bg-gray-900 rounded-xl p-3 shadow-2xl">
-                                <div class="bg-white rounded-lg p-6">
-                                    <div class="text-center mb-6">
+                                <div class="bg-white rounded-lg p-4 md:p-6">
+                                    <div class="text-center mb-4 md:mb-6">
                                         <h3 class="text-lg font-semibold text-gray-800">Experience Creator</h3>
                                     </div>
-                                    <div class="grid grid-cols-2 gap-4">
-                                        <div class="bg-gray-100 rounded-lg p-4 h-20 flex items-center justify-center">
-                                            <div class="w-8 h-8 bg-primary/20 rounded"></div>
-                                        </div>
-                                        <div class="bg-gray-100 rounded-lg p-4 h-20 flex items-center justify-center">
-                                            <div class="w-8 h-8 bg-primary/20 rounded"></div>
-                                        </div>
-                                        <div class="bg-gray-100 rounded-lg p-4 h-20 flex items-center justify-center">
-                                            <div class="w-8 h-8 bg-primary/20 rounded"></div>
-                                        </div>
-                                        <div class="bg-gray-100 rounded-lg p-4 h-20 flex items-center justify-center">
-                                            <div class="w-8 h-8 bg-primary/20 rounded"></div>
-                                        </div>
+                                    <div class="rounded-lg overflow-hidden border border-gray-100 bg-gray-50">
+                                        <img src="{{ asset('images/diantar.png') }}" 
+                                             alt="Diantara Experience Creator" 
+                                             class="w-full h-56 md:h-64 object-cover">
                                     </div>
                                 </div>
                             </div>

@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('events', function (Blueprint $table) {
-            //
+            if (!Schema::hasColumn('events', 'price')) {
+                $table->decimal('price', 10, 2)->nullable()->after('created_by');
+            }
         });
     }
 
@@ -22,7 +24,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('events', function (Blueprint $table) {
-            //
+            if (Schema::hasColumn('events', 'price')) {
+                $table->dropColumn('price');
+            }
         });
     }
 };

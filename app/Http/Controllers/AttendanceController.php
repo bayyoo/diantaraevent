@@ -5,6 +5,8 @@ use App\Models\Attendance;
 use App\Models\Event;
 use App\Models\Participant;
 use App\Models\EventAttendance;
+use App\Models\EventSession;
+use App\Models\EventAttendanceSession;
 use App\Models\User;
 use App\Services\CertificateService;
 use Illuminate\Http\Request;
@@ -275,5 +277,67 @@ class AttendanceController extends Controller
             ->count();
 
         return view('admin.attendance.verification', compact('event', 'totalRegistrations', 'totalAttended'));
+    }
+
+    /**
+     * Simple session check-in endpoint (auth user)
+     * Params: event_id, session_id
+     */
+    public function sessionCheckIn(Request $request)
+    {
+        $request->validate([
+            'event_id' => 'required|exists:events,id',
+            'session_id' => 'required|exists:event_sessions,id',
+        ]);
+
+        if (!auth()->check()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        $event = Event::findOrFail($request->event_id);
+        $session = EventSession::where('id', $request->session_id)
+            ->where('event_id', $event->id)
+            ->firstOrFail();
+
+        // Ensure user registered as participant
+        $participant = Participant::where('user_id', auth()->id())
+            ->where('event_id', $event->id)
+            ->first();
+        if (!$participant) {
+            return response()->json(['success' => false, 'message' => 'Anda tidak terdaftar pada event ini'], 403);
+        }
+
+        // Validate time within session window
+        $now = now();
+        if ($session->start_at && $now->lt($session->start_at)) {
+            return response()->json(['success' => false, 'message' => 'Sesi belum dimulai'], 400);
+        }
+        if ($session->end_at && $now->gt($session->end_at)) {
+            return response()->json(['success' => false, 'message' => 'Sesi telah berakhir'], 400);
+        }
+
+        $attendance = EventAttendanceSession::firstOrCreate(
+            [
+                'event_id' => $event->id,
+                'session_id' => $session->id,
+                'user_id' => auth()->id(),
+            ],
+            [
+                'checked_in_at' => now(),
+            ]
+        );
+
+        if (!$attendance->wasRecentlyCreated && !$attendance->checked_in_at) {
+            $attendance->update(['checked_in_at' => now()]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Check-in sesi berhasil',
+            'data' => [
+                'session' => $session->name,
+                'checked_in_at' => $attendance->checked_in_at,
+            ]
+        ]);
     }
 }

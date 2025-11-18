@@ -220,7 +220,7 @@
         }
 
         /* Make event grid always clickable and above other layers */
-        .events-grid-container { position: relative; z-index: 5; pointer-events: auto; isolation: isolate; will-change: transform; }
+        .events-grid-container { position: relative; z-index: 5; pointer-events: auto; isolation: isolate; }
         .event-card-link { position: relative; z-index: 20; pointer-events: auto; display: block; }
         .events-grid-container a, .events-grid-container a * { pointer-events: auto !important; }
         /* Any stray overlay in the grid becomes non-interactive */
@@ -237,7 +237,7 @@
         @media (max-width: 640px) { .selected-events-grid, .latest-events-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
         
         /* Defer rendering for heavy sections to improve initial scroll */
-        .defer-section { content-visibility: auto; contain-intrinsic-size: 800px 600px; }
+        .defer-section { content-visibility: visible; contain-intrinsic-size: auto; }
 
         /* Mobile Responsive */
         @media (max-width: 768px) {
@@ -797,167 +797,11 @@
                 <div class="my-16">
                     <div class="bg-gradient-to-r from-primary/5 to-purple-500/5 rounded-2xl p-8 text-center">
                         <div class="max-w-3xl mx-auto">
-                            <h3 class="text-2xl font-bold text-gray-900 mb-3">Why Choose Diantara Events?</h3>
-                            <p class="text-gray-600 mb-6">Join thousands of people who trust us to discover amazing events and create unforgettable memories.</p>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div class="text-center">
-                                    <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                                        <i class="fas fa-shield-alt text-primary text-xl"></i>
-                                    </div>
-                                    <h4 class="font-semibold text-gray-900 mb-1">Secure & Trusted</h4>
-                                    <p class="text-sm text-gray-600">Safe payment and verified event organizers</p>
-                                </div>
-                                <div class="text-center">
-                                    <div class="w-12 h-12 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                                        <i class="fas fa-clock text-green-500 text-xl"></i>
-                                    </div>
-                                    <h4 class="font-semibold text-gray-900 mb-1">Instant Confirmation</h4>
-                                    <p class="text-sm text-gray-600">Get your tickets immediately after booking</p>
-                                </div>
-                                <div class="text-center">
-                                    <div class="w-12 h-12 bg-orange-500/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                                        <i class="fas fa-headset text-orange-500 text-xl"></i>
-                                    </div>
-                                    <h4 class="font-semibold text-gray-900 mb-1">24/7 Support</h4>
-                                    <p class="text-sm text-gray-600">We're here to help whenever you need us</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Third Section: Most Popular Events -->
-                @if($events->count() > 10)
-                    <div class="mb-8 max-w-7xl mx-auto bg-white rounded-2xl border border-gray-100 p-6">
-                        <div class="flex justify-between items-center mb-4">
-                            <div>
-                                <h2 class="text-xl font-bold text-gray-900">Most Popular Events</h2>
-                                <p class="text-sm text-gray-600 mt-1">Events with the highest attendance and best reviews from our community!</p>
-                            </div>
-                            <a href="{{ route('catalog.index') }}" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors">Lihat Semua</a>
-                        </div>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                            @foreach($events->skip(10)->take(5) as $event)
-                                @php
-                                    // Determine category based on event title
-                                    $category = 'General';
-                                    $categoryColor = 'bg-gray-500';
-                                    if (str_contains(strtolower($event->title), 'workshop') || str_contains(strtolower($event->title), 'tech talk') || str_contains(strtolower($event->title), 'seminar')) {
-                                        $category = 'Technology';
-                                        $categoryColor = 'bg-[#7681FF]';
-                                    } elseif (str_contains(strtolower($event->title), 'music') || str_contains(strtolower($event->title), 'festival') || str_contains(strtolower($event->title), 'konser')) {
-                                        $category = 'Music';
-                                        $categoryColor = 'bg-purple-500';
-                                    } elseif (str_contains(strtolower($event->title), 'dance') || str_contains(strtolower($event->title), 'comedy') || str_contains(strtolower($event->title), 'disney')) {
-                                        $category = 'Entertainment';
-                                        $categoryColor = 'bg-pink-500';
-                                    } elseif (str_contains(strtolower($event->title), 'competition') || str_contains(strtolower($event->title), 'championship') || str_contains(strtolower($event->title), 'gaming')) {
-                                        $category = 'Competition';
-                                        $categoryColor = 'bg-red-500';
-                                    } elseif (str_contains(strtolower($event->title), 'business') || str_contains(strtolower($event->title), 'networking') || str_contains(strtolower($event->title), 'startup')) {
-                                        $category = 'Business';
-                                        $categoryColor = 'bg-green-500';
-                                    }
-
-                                    // Event images mapping
-                                    $eventImages = [
-                                        'SCREAM OK DANCE 2025' => 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=400&fit=crop&crop=center',
-                                        'BERISIK ASIK Music Festival' => 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=600&h=400&fit=crop&crop=center',
-                                        'SUCI FEST 2025' => 'https://images.unsplash.com/photo-1571266028243-e68f857f258a?w=600&h=400&fit=crop&crop=center',
-                                        'Disney THE LITTLE MERMAID JR' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=400&fit=crop&crop=center',
-                                        'Workshop Laravel untuk Pemula' => 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&h=400&fit=crop&crop=center',
-                                        'Tech Talk: AI & Machine Learning' => 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=600&h=400&fit=crop&crop=center',
-                                    ];
-                                    $imageUrl = $eventImages[$event->title] ?? 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=600&h=400&fit=crop&crop=center';
-                                    
-                                    // Use price from database
-                                    $isFree = !$event->price || $event->price == 0;
-                                    $price = $isFree ? 0 : $event->price;
-                                @endphp
-                                <a href="{{ $event->link_url ?? '#' }}" class="event-card-link bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group cursor-pointer">
-                                    <!-- Image Section -->
-                                    <div class="relative overflow-hidden">
-                                        @if($event->flyer_path)
-                                            <img 
-                                                src="{{ asset('storage/' . $event->flyer_path) }}" 
-                                                alt="{{ $event->title }}" 
-                                                class="w-full h-40 object-cover transition-transform duration-500 group-hover:scale-105"
-                                                onerror="this.src='{{ $imageUrl }}'"
-                                            >
-                                        @else
-                                            <img src="{{ $imageUrl }}" alt="{{ $event->title }}" class="w-full h-40 object-cover transition-transform duration-500 group-hover:scale-105" onerror="this.src='https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&h=600&fit=crop'">
-                                        @endif
-                                        
-                                        <!-- Category Badge -->
-                                        <div class="absolute top-2 left-2">
-                                            <span class="{{ $categoryColor }} text-white text-xs font-medium px-2 py-1 rounded">
-                                                {{ $category }}
-                                            </span>
-                                        </div>
-                                        
-                                        <!-- Price Badge -->
-                                        @if($isFree)
-                                            <div class="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
-                                                FREE
-                                            </div>
-                                        @else
-                                            <div class="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
-                                                IDR {{ number_format($price / 1000, 0) }}K
-                                            </div>
-                                        @endif
-                                        
-                                        <!-- Popular Badge -->
-                                        <div class="absolute bottom-2 left-2">
-                                            <span class="bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded flex items-center">
-                                                <i class="fas fa-star mr-1"></i> Popular
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <!-- Content Section -->
-                                    <div class="p-3">
-                                        <h3 class="font-semibold text-gray-900 mb-2 text-sm leading-tight line-clamp-2 min-h-[2.5rem]">
-                                            {{ $event->title }}
-                                        </h3>
-                                        
-                                        <div class="flex items-center text-xs text-gray-600 mb-1">
-                                            <i class="fas fa-calendar-alt mr-1"></i>
-                                            {{ \Carbon\Carbon::parse($event->event_date)->format('d M Y') }}
-                                        </div>
-                                        
-                                        <div class="flex items-center text-xs text-gray-600 mb-2">
-                                            <i class="fas fa-map-marker-alt mr-1"></i>
-                                            {{ Str::limit($event->location, 25) }}
-                                        </div>
-                                        
-                                        <div class="flex items-center justify-between">
-                                            <span class="text-xs text-gray-500">
-                                                by {{ $event->creator_name }}
-                                            </span>
-                                            @if($event->creator_type === 'partner')
-                                                <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded">
-                                                    Partner
-                                                </span>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                @endif
-                
-                <!-- Testimonial Section -->
-                <div class="my-16">
-                    <div class="bg-white rounded-2xl border border-gray-100 p-8">
-                        <div class="text-center mb-8">
                             <h3 class="text-2xl font-bold text-gray-900 mb-2">What Our Community Says</h3>
                             <p class="text-gray-600">Real experiences from real people who joined our events</p>
                         </div>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                        <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div class="text-center p-6 bg-gray-50 rounded-xl">
                                 <div class="flex justify-center mb-4">
                                     <div class="flex text-yellow-400">
@@ -1021,6 +865,7 @@
                     </div>
                 </div>
                 
+                {{--
                 <!-- Newsletter Section -->
                 <div class="my-16">
                     <div class="bg-gradient-to-r from-primary to-purple-600 rounded-2xl p-8 text-white text-center">
@@ -1039,7 +884,9 @@
                         </div>
                     </div>
                 </div>
+                --}}
                 
+                {{--
                 <!-- Fourth Section: Upcoming This Week -->
                 @if($events->count() > 15)
                     <div class="mb-8 max-w-7xl mx-auto bg-white rounded-2xl border border-gray-100 p-6">
@@ -1161,6 +1008,7 @@
                         </div>
                     </div>
                 @endif
+                --}}
             @else
                 <!-- Empty State -->
                 <div class="empty-state rounded-3xl p-16 text-center max-w-lg mx-auto">

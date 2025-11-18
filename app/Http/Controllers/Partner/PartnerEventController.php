@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PartnerEvent;
 use App\Models\PartnerTicket;
 use App\Models\Event;
+use App\Models\EventSession;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -56,6 +57,10 @@ class PartnerEventController extends Controller
             'address' => 'required|string',
             'has_certificate' => 'nullable|boolean',
             'certificate_template' => 'nullable|in:template_a,template_b,custom',
+            'sessions' => 'nullable|array',
+            'sessions.*.name' => 'nullable|string|max:100',
+            'sessions.*.start_at' => 'nullable|date',
+            'sessions.*.end_at' => 'nullable|date|after_or_equal:sessions.*.start_at',
         ]);
 
         $partner = Auth::guard('partner')->user();
@@ -93,7 +98,7 @@ class PartnerEventController extends Controller
         try {
             $adminId = DB::table('users')->where('is_admin', 1)->value('id') ?? DB::table('users')->min('id');
             if ($adminId) {
-                Event::updateOrCreate(
+                $mirrored = Event::updateOrCreate(
                     ['slug' => $event->slug],
                     [
                         'title' => $event->title,
@@ -114,6 +119,21 @@ class PartnerEventController extends Controller
                         'certificate_template' => $request->certificate_template ?? 'template_a',
                     ]
                 );
+
+                // Create sessions if provided
+                if ($mirrored && is_array($request->sessions)) {
+                    foreach ($request->sessions as $idx => $s) {
+                        if (!empty($s['name']) && !empty($s['start_at'])) {
+                            EventSession::create([
+                                'event_id' => $mirrored->id,
+                                'name' => $s['name'],
+                                'start_at' => $s['start_at'],
+                                'end_at' => $s['end_at'] ?? null,
+                                'order_index' => $idx + 1,
+                            ]);
+                        }
+                    }
+                }
             }
         } catch (\Throwable $e) {
             \Log::warning('Mirror partner event step1 failed: '.$e->getMessage());

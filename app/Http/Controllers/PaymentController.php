@@ -102,6 +102,8 @@ class PaymentController extends Controller
                 'payment_status' => 'pending',
                 'amount' => $request->amount,
                 'snap_token' => $snapToken,
+                // Placeholder; akan diganti saat payment sukses di handleNotification
+                'attendance_token' => '',
             ]);
 
             return response()->json([
@@ -162,6 +164,19 @@ class PaymentController extends Controller
                     
                     // Generate attendance token
                     $this->generateAttendanceToken($participant);
+
+                    // Generate e-ticket with QR/token (if PDF library available)
+                    try {
+                        if (class_exists('\\Barryvdh\\DomPDF\\Facade\\Pdf')) {
+                            $ticketController = new \App\Http\Controllers\TicketController();
+                            $ticketPath = $ticketController->generateTicketPath($participant);
+                            if ($ticketPath) {
+                                $participant->update(['ticket_path' => $ticketPath]);
+                            }
+                        }
+                    } catch (\Exception $e) {
+                        \Log::error('E-Ticket generation failed after payment: ' . $e->getMessage());
+                    }
                 }
             } elseif ($transactionStatus == 'pending') {
                 $participant->update(['payment_status' => 'pending']);

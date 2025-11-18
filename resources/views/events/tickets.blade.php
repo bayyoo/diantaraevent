@@ -280,8 +280,15 @@
                             @else
                                 @php
                                     // Fallback placeholder tiers if no tickets provided
-                                    $seed = $event->id * 7;
-                                    $basePrice = (($seed % 451) + 50) * 1000;
+                                    // Gunakan harga event sebagai dasar jika tersedia
+                                    if ($event->price && $event->price > 0) {
+                                        $basePrice = (int) $event->price;
+                                    } else {
+                                        // Jika belum ada price di event, gunakan seed berbasis ID seperti sebelumnya
+                                        $seed = $event->id * 7;
+                                        $basePrice = (($seed % 451) + 50) * 1000;
+                                    }
+
                                     $earlyBirdPrice = round($basePrice * 0.75);
                                     $regularPrice = $basePrice;
                                     $vipPrice = round($basePrice * 1.75);

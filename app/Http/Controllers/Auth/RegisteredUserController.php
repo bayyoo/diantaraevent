@@ -40,7 +40,7 @@ class RegisteredUserController extends Controller
             'phone' => 'required|string|max:20',
             'address' => 'required|string|max:500',
             'education' => 'required|string|in:SD,SMP,SMA/SMK,D3,S1,S2,S3',
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'password' => ['required', 'confirmed', Rules\Password::min(8)->mixedCase()->numbers()->symbols()],
             // Temporarily disable reCAPTCHA for development
             // 'g-recaptcha-response' => ['required', new Recaptcha],
         ]);

@@ -151,6 +151,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
 // API route for mobile/kiosk (optional)
 Route::post('/api/attendance/checkin', [App\Http\Controllers\Admin\AttendanceController::class, 'checkIn']);
+// Session-based attendance check-in
+Route::post('/api/attendance/session/checkin', [App\Http\Controllers\AttendanceController::class, 'sessionCheckIn']);
 
 // Certificate routes (Legacy)
 Route::get('/certificate/search', [App\Http\Controllers\CertificateController::class, 'searchPage'])

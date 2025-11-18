@@ -13,6 +13,30 @@
                 <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
                     <i class="fas fa-check text-xs"></i>
                 </div>
+
+            <!-- Custom Certificate Template (shown if chosen in Step 1) -->
+            <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                <h4 class="font-medium text-gray-900 mb-3">Custom Certificate Template</h4>
+                <p class="text-sm text-gray-600 mb-4">Jika di Step 1 memilih template <strong>Custom</strong>, unggah file template sertifikat (PDF/PNG/JPG). Tanda tangan & cap akan ditumpuk di atas template.</p>
+                <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center">
+                    <div id="customCertPreview" class="mb-4">
+                        @php($customPath = optional(\App\Models\Event::where('slug', $event->slug)->first())->custom_certificate_path)
+                        @if($customPath)
+                            <img src="{{ Storage::url($customPath) }}" alt="Custom certificate" class="mx-auto max-h-48 rounded-lg">
+                            <p class="text-sm text-gray-600 mt-2">Current custom template</p>
+                        @else
+                            <i class="fas fa-file-image text-4xl text-gray-300 mb-3"></i>
+                            <p class="text-gray-600">Upload custom certificate file</p>
+                            <p class="text-sm text-gray-500">PDF/PNG/JPG up to 5MB</p>
+                        @endif
+                    </div>
+                    <input type="file" id="custom_certificate" name="custom_certificate" accept="application/pdf,image/*" class="hidden" onchange="previewImage(this, 'customCertPreview')">
+                    <button type="button" onclick="document.getElementById('custom_certificate').click()" class="border border-nexus text-nexus px-6 py-2 rounded-lg hover:bg-nexus hover:text-white transition-all">
+                        <i class="fas fa-upload mr-2"></i>
+                        {{ $customPath ? 'Ganti File' : 'Upload File' }}
+                    </button>
+                </div>
+            </div>
                 <span class="ml-3 text-sm text-green-600">Basic Information</span>
             </div>
             <div class="flex items-center">

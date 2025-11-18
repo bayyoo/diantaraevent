@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Participant;
+use App\Models\EventAttendanceSession;
+use App\Models\EventCertificate;
 
 class MyEventsController extends Controller
 {
@@ -12,14 +14,31 @@ class MyEventsController extends Controller
         $user = $request->user();
         
         // Get all events the user has registered for
-        $participants = Participant::with('event')
+        $participants = Participant::with('event.sessions')
             ->where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
             ->get();
         
+        $eventIds = $participants->pluck('event_id')->unique()->values();
+        
+        // Count attended sessions per event for this user
+        $attendanceCounts = EventAttendanceSession::whereIn('event_id', $eventIds)
+            ->where('user_id', $user->id)
+            ->get()
+            ->groupBy('event_id')
+            ->map->count();
+        
+        // Fetch existing certificates for this user keyed by event_id
+        $certificatesByEvent = EventCertificate::where('user_id', $user->id)
+            ->whereIn('event_id', $eventIds)
+            ->get()
+            ->keyBy('event_id');
+        
         return view('my-events.index', [
             'participants' => $participants,
-            'user' => $user
+            'user' => $user,
+            'attendanceCounts' => $attendanceCounts,
+            'certificatesByEvent' => $certificatesByEvent,
         ]);
     }
 }

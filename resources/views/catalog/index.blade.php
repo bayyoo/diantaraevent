@@ -188,67 +188,45 @@
                 @endphp
                 @foreach($events->take(4) as $index => $event)
                     @php
-                        // Generate consistent price based on event ID
-                        $seed = $event->id * 7;
-                        $price = (($seed % 451) + 50);
+                        $imageUrl = $randomImages[$index % count($randomImages)];
+                        $isFree = !$event->price || $event->price == 0;
+                        $price = $isFree ? 0 : $event->price;
                     @endphp
-                    <div class="event-card bg-white rounded-lg shadow-sm hover:shadow-md overflow-hidden border border-gray-100 transition-all duration-300 group">
-                        <div class="relative overflow-hidden">
+                    <a href="{{ route('events.show', $event) }}" class="event-card-link bg-white rounded-2xl border border-gray-200 hover:border-gray-300 transition-all duration-300 overflow-hidden group cursor-pointer flex flex-col h-full p-3">
+                        <!-- Image Top -->
+                        <div class="relative overflow-hidden rounded-xl">
                             @if($event->flyer_path)
                                 <img 
                                     src="{{ asset('storage/' . $event->flyer_path) }}" 
                                     alt="{{ $event->title }}" 
-                                    class="w-full h-36 object-cover transition-transform duration-500 group-hover:scale-105"
-                                    onerror="this.src='{{ $randomImages[$index % count($randomImages)] }}'"
+                                    loading="lazy" decoding="async"
+                                    class="w-full h-32 object-cover"
+                                    onerror="this.src='{{ $imageUrl }}'"
                                 >
                             @else
-                                <img src="{{ $randomImages[$index % count($randomImages)] }}" alt="{{ $event->title }}" class="w-full h-36 object-cover transition-transform duration-500 group-hover:scale-105" onerror="this.src='https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&h=600&fit=crop'">
+                                <img src="{{ $imageUrl }}" alt="{{ $event->title }}" loading="lazy" decoding="async" class="w-full h-32 object-cover" onerror="this.src='https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&h=600&fit=crop'">
                             @endif
-                            
-                            <!-- Category Badge -->
-                            <div class="absolute top-1.5 left-1.5">
-                                <span class="bg-white/95 backdrop-blur-sm text-gray-800 text-[9px] font-semibold px-2 py-0.5 rounded-full shadow-md">
-                                    Event
-                                </span>
-                            </div>
                         </div>
 
-                        <div class="p-2.5">
-                            <h3 class="font-bold text-gray-900 mb-1 text-xs leading-tight line-clamp-2 min-h-[2rem] hover:text-primary transition-colors">
-                                <a href="{{ route('events.show', $event) }}">{{ $event->title }}</a>
+                        <!-- Content -->
+                        <div class="mt-3 flex-1 flex flex-col">
+                            <h3 class="font-semibold text-gray-900 mb-1 text-[12px] leading-snug line-clamp-2 min-h-[2rem]">
+                                {{ $event->title }}
                             </h3>
-                            
-                            <div class="space-y-0.5 mb-2">
-                                <div class="flex items-center text-[10px] text-gray-600">
-                                    <i class="fas fa-calendar-alt mr-1 text-primary w-2.5 text-[9px]"></i>
-                                    <span>{{ $event->event_date->format('d M Y') }}</span>
-                                </div>
-                                
-                                <div class="flex items-center text-[10px] text-gray-600">
-                                    <i class="fas fa-clock mr-1 text-primary w-2.5 text-[9px]"></i>
-                                    <span>{{ $event->event_time }}</span>
-                                </div>
-                                
-                                <div class="flex items-center text-[10px] text-gray-600">
-                                    <i class="fas fa-map-marker-alt mr-1 text-primary w-2.5 text-[9px]"></i>
-                                    <span class="line-clamp-1">{{ Str::limit($event->location, 20) }}</span>
-                                </div>
+                            <div class="space-y-1.5 mb-3">
+                                <div class="flex items-center text-[10px] text-gray-600"><i class="fas fa-user mr-1.5 text-gray-400"></i> {{ Str::limit($event->creator_name ?? 'Organizer', 28) }}</div>
+                                <div class="flex items-center text-[10px] text-gray-600"><i class="fas fa-map-marker-alt mr-1.5 text-gray-400"></i> {{ Str::limit($event->location, 40) }}</div>
                             </div>
-                            
-                            <div class="flex items-center justify-between pt-2 border-t border-gray-100">
-                                <div>
-                                    @if($price <= 100)
-                                        <p class="text-sm font-bold text-green-600">GRATIS</p>
-                                    @else
-                                        <p class="text-[10px] font-bold text-primary">Rp {{ number_format($price * 1000, 0, ',', '.') }}</p>
-                                    @endif
-                                </div>
-                                <a href="{{ route('events.show', $event) }}" class="bg-primary hover:bg-primary-dark text-white font-semibold py-1 px-2.5 rounded text-[10px] transition-all duration-200">
-                                    Detail
-                                </a>
+                            <div class="flex items-center justify-between pt-2 border-t border-gray-100 mt-auto">
+                                <span class="text-[10px] text-gray-500">Mulai dari</span>
+                                @if($isFree)
+                                    <span class="px-2 py-1 rounded-full text-[11px] font-semibold bg-green-50 text-green-600">Gratis</span>
+                                @else
+                                    <span class="px-2 py-1 rounded-full text-[11px] font-semibold" style="background:#E8EAFF;color:#7681FF;">Rp {{ number_format($price, 0, ',', '.') }}</span>
+                                @endif
                             </div>
                         </div>
-                    </div>
+                    </a>
                 @endforeach
             </div>
         </div>
@@ -280,67 +258,45 @@
                 @endphp
                 @foreach($events->skip(4)->take(4) as $index => $event)
                     @php
-                        // Generate consistent price based on event ID
-                        $seed = $event->id * 7;
-                        $price = (($seed % 451) + 50);
+                        $imageUrl = $latestImages[$index % count($latestImages)];
+                        $isFree = !$event->price || $event->price == 0;
+                        $price = $isFree ? 0 : $event->price;
                     @endphp
-                    <div class="event-card bg-white rounded-lg shadow-sm hover:shadow-md overflow-hidden border border-gray-100 transition-all duration-300 group">
-                        <div class="relative overflow-hidden">
+                    <a href="{{ route('events.show', $event) }}" class="event-card-link bg-white rounded-2xl border border-gray-200 hover:border-gray-300 transition-all duration-300 overflow-hidden group cursor-pointer flex flex-col h-full p-3">
+                        <!-- Image Top -->
+                        <div class="relative overflow-hidden rounded-xl">
                             @if($event->flyer_path)
                                 <img 
                                     src="{{ asset('storage/' . $event->flyer_path) }}" 
                                     alt="{{ $event->title }}" 
-                                    class="w-full h-36 object-cover transition-transform duration-500 group-hover:scale-105"
-                                    onerror="this.src='{{ $latestImages[$index % count($latestImages)] }}'"
+                                    loading="lazy" decoding="async"
+                                    class="w-full h-32 object-cover"
+                                    onerror="this.src='{{ $imageUrl }}'"
                                 >
                             @else
-                                <img src="{{ $latestImages[$index % count($latestImages)] }}" alt="{{ $event->title }}" class="w-full h-36 object-cover transition-transform duration-500 group-hover:scale-105" onerror="this.src='https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&h=600&fit=crop'">
+                                <img src="{{ $imageUrl }}" alt="{{ $event->title }}" loading="lazy" decoding="async" class="w-full h-32 object-cover" onerror="this.src='https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&h=600&fit=crop'">
                             @endif
-                            
-                            <!-- Category Badge -->
-                            <div class="absolute top-1.5 left-1.5">
-                                <span class="bg-white/95 backdrop-blur-sm text-gray-800 text-[9px] font-semibold px-2 py-0.5 rounded-full shadow-md">
-                                    Event
-                                </span>
-                            </div>
                         </div>
 
-                        <div class="p-2.5">
-                            <h3 class="font-bold text-gray-900 mb-1 text-xs leading-tight line-clamp-2 min-h-[2rem] hover:text-primary transition-colors">
-                                <a href="{{ route('events.show', $event) }}">{{ $event->title }}</a>
+                        <!-- Content -->
+                        <div class="mt-3 flex-1 flex flex-col">
+                            <h3 class="font-semibold text-gray-900 mb-1 text-[12px] leading-snug line-clamp-2 min-h-[2rem]">
+                                {{ $event->title }}
                             </h3>
-                            
-                            <div class="space-y-0.5 mb-2">
-                                <div class="flex items-center text-[10px] text-gray-600">
-                                    <i class="fas fa-calendar-alt mr-1 text-primary w-2.5 text-[9px]"></i>
-                                    <span>{{ $event->event_date->format('d M Y') }}</span>
-                                </div>
-                                
-                                <div class="flex items-center text-[10px] text-gray-600">
-                                    <i class="fas fa-clock mr-1 text-primary w-2.5 text-[9px]"></i>
-                                    <span>{{ $event->event_time }}</span>
-                                </div>
-                                
-                                <div class="flex items-center text-[10px] text-gray-600">
-                                    <i class="fas fa-map-marker-alt mr-1 text-primary w-2.5 text-[9px]"></i>
-                                    <span class="line-clamp-1">{{ Str::limit($event->location, 20) }}</span>
-                                </div>
+                            <div class="space-y-1.5 mb-3">
+                                <div class="flex items-center text-[10px] text-gray-600"><i class="fas fa-user mr-1.5 text-gray-400"></i> {{ Str::limit($event->creator_name ?? 'Organizer', 28) }}</div>
+                                <div class="flex items-center text-[10px] text-gray-600"><i class="fas fa-map-marker-alt mr-1.5 text-gray-400"></i> {{ Str::limit($event->location, 40) }}</div>
                             </div>
-                            
-                            <div class="flex items-center justify-between pt-2 border-t border-gray-100">
-                                <div>
-                                    @if($price <= 100)
-                                        <p class="text-sm font-bold text-green-600">GRATIS</p>
-                                    @else
-                                        <p class="text-[10px] font-bold text-primary">Rp {{ number_format($price * 1000, 0, ',', '.') }}</p>
-                                    @endif
-                                </div>
-                                <a href="{{ route('events.show', $event) }}" class="bg-primary hover:bg-primary-dark text-white font-semibold py-1 px-2.5 rounded text-[10px] transition-all duration-200">
-                                    Detail
-                                </a>
+                            <div class="flex items-center justify-between pt-2 border-t border-gray-100 mt-auto">
+                                <span class="text-[10px] text-gray-500">Mulai dari</span>
+                                @if($isFree)
+                                    <span class="px-2 py-1 rounded-full text-[11px] font-semibold bg-green-50 text-green-600">Gratis</span>
+                                @else
+                                    <span class="px-2 py-1 rounded-full text-[11px] font-semibold" style="background:#E8EAFF;color:#7681FF;">IDR {{ number_format($price / 1000, 0, ',', '.') }}K</span>
+                                @endif
                             </div>
                         </div>
-                    </div>
+                    </a>
                 @endforeach
             </div>
         </div>
