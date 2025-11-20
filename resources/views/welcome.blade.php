@@ -246,6 +246,11 @@
                 margin: 0 0.5rem;
                 max-width: 100%;
             }
+            /* On mobile, show the whole banner like an ad strip */
+            .carousel-container img {
+                object-fit: contain !important;
+                background-color: #f3f4f6;
+            }
             .category-card:hover .category-image {
                 transform: scale(1.1);
             }
@@ -275,30 +280,16 @@
             }
         }
         
-        /* Base page background should be white (fix overscroll top color) */
+        /* Base page background should be white and use natural scroll */
         html, body {
             margin: 0 !important;
             padding: 0 !important;
-            background-color: #ffffff !important; /* White */
+            background-color: #ffffff !important;
             overflow-x: hidden !important;
-        }
-        
-        /* Force footer to extend beyond viewport */
-        footer {
-            margin-bottom: -100px !important;
-            padding-bottom: 100px !important;
-        }
-        
-        /* Ensure body ends with footer */
-        body::after {
-            content: '';
-            display: block;
-            height: 0;
-            background: #ffffff;
         }
     </style>
 </head>
-<body class="bg-gray-900 flex flex-col min-h-screen overflow-x-hidden m-0 p-0">
+<body class="bg-gray-900 flex flex-col overflow-x-hidden m-0 p-0">
     @include('components.navigation')
 
     <!-- Flash Messages -->
