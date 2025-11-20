@@ -42,7 +42,7 @@
                     <a href="{{ route('home') }}" class="flex items-center space-x-2">
                         <!-- Logo Icon - sama seperti navigation.blade -->
                         <div class="w-9 h-9 flex items-center justify-center">
-                            <img src="{{ asset('storage/images/logos/diantara.png') }}"
+                            <img src="{{ asset('images/diantara_logo.png') }}"
                                  alt="Diantara Logo"
                                  class="w-8 h-8 object-contain">
                         </div>

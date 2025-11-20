@@ -8,7 +8,7 @@
                 <div class="sm:col-span-2 lg:col-span-1">
                     <div class="flex items-center mb-4">
                         <div class="w-10 h-10 flex items-center justify-center">
-                            <img src="{{ asset('storage/images/logos/diantara.png') }}" 
+                            <img src="{{ asset('images/diantara_logo.png') }}" 
                                  alt="Diantara Logo" 
                                  class="w-10 h-10 object-contain">
                         </div>
