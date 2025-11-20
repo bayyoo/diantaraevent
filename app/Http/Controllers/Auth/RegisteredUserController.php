@@ -4,14 +4,13 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Mail\VerifyEmailOTP;
 use App\Rules\Recaptcha;
+use App\Services\ResendMailer;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -62,8 +61,8 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
 
-        // Send OTP email
-        Mail::to($user->email)->send(new VerifyEmailOTP($user, $otpCode));
+        // Send OTP email via Resend API (avoids SMTP timeouts on Railway)
+        app(ResendMailer::class)->sendOtp($user->email, $otpCode, $user->name);
         
         // Store email in session for OTP verification
         session(['verification_email' => $user->email]);
