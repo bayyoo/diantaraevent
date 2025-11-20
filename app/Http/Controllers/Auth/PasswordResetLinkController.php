@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Services\ResendMailer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
@@ -40,24 +41,25 @@ class PasswordResetLinkController extends Controller
                 return back()->with('status', 'Link reset password telah dikirim ke email Anda jika akun tersebut terdaftar.');
             }
 
-            // Check if user is verified
-            if (!$user->email_verified_at) {
-                \Log::info('Password reset attempted for unverified email: ' . $request->email);
-                return back()->with('error', 'Akun Anda belum diverifikasi. Silakan verifikasi email terlebih dahulu.');
-            }
+            // Generate password reset token using the broker
+            $token = Password::createToken($user);
 
-            // Send reset link
-            $status = Password::sendResetLink(
-                $request->only('email')
-            );
+            // Build the reset URL (same as Laravel default)
+            $resetUrl = url(route('password.reset', [
+                'token' => $token,
+                'email' => $user->email,
+            ], false));
 
-            if ($status === Password::RESET_LINK_SENT) {
-                \Log::info('Password reset link sent successfully to: ' . $request->email);
+            // Send reset link email via Resend API
+            $sent = app(ResendMailer::class)->sendPasswordReset($user->email, $resetUrl, $user->name);
+
+            if ($sent) {
+                \Log::info('Password reset link sent successfully via Resend to: ' . $request->email);
                 return back()->with('status', 'Link reset password telah dikirim ke email Anda. Silakan cek inbox atau folder spam.');
-            } else {
-                \Log::error('Failed to send password reset link to: ' . $request->email . ' Status: ' . $status);
-                return back()->with('error', 'Gagal mengirim link reset password. Silakan coba lagi atau hubungi administrator.');
             }
+
+            \Log::error('Failed to send password reset link via Resend to: ' . $request->email);
+            return back()->with('error', 'Gagal mengirim link reset password. Silakan coba lagi atau hubungi administrator.');
 
         } catch (\Exception $e) {
             \Log::error('Password reset error: ' . $e->getMessage());
