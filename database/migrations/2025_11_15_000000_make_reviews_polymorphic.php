@@ -28,19 +28,9 @@ return new class extends Migration {
                 ]);
         }
 
-        // 3. Drop FK & drop event_id kalau masih ada
+        // 3. Drop event_id kalau masih ada (tanpa menyentuh FK yg mungkin sudah hilang)
         Schema::table('reviews', function (Blueprint $table) {
             if (Schema::hasColumn('reviews', 'event_id')) {
-
-                // Drop FK jika ada
-                try { 
-                    $table->dropForeign(['event_id']); 
-                } catch (\Throwable $e) {}
-
-                try { 
-                    $table->dropForeign('reviews_event_id_foreign'); 
-                } catch (\Throwable $e) {}
-
                 // Drop kolom event_id
                 try {
                     $table->dropColumn('event_id');
