@@ -481,7 +481,7 @@
             </div>
 
             <!-- Icon-style categories -->
-            <div class="flex items-stretch justify-center gap-4 md:gap-6 overflow-x-auto py-1.5">
+            <div class="flex items-stretch justify-center gap-4 md:gap-6 overflow-x-auto md:overflow-x-visible py-1.5">
                 @foreach($eventCategories as $category)
                     @php
                         $name = strtolower($category['name']);

@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Services\BrevoEmailService;
 use Inertia\Inertia;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyOTPController;
@@ -14,6 +15,17 @@ use App\Http\Controllers\EventRegistrationController;
 use App\Http\Controllers\CsrfTokenController;
 
 Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+Route::get('/test-brevo-api', function (BrevoEmailService $brevo) {
+    $ok = $brevo->sendEmail(
+        env('BREVO_TEST_RECIPIENT_EMAIL', 'example@example.com'),
+        env('BREVO_TEST_RECIPIENT_NAME', 'Test User'),
+        'Test Brevo API',
+        '<h1>Halo!</h1><p>Ini test email dari Brevo HTTP API di Laravel.</p>'
+    );
+
+    return $ok ? 'Email terkirim (cek inbox/spam)' : 'Gagal kirim (cek log).';
+});
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index']);
 
