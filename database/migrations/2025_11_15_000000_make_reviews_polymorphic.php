@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -7,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 return new class extends Migration {
     public function up(): void
     {
+        // 1. Tambah kolom polymorphic kalau belum ada
         Schema::table('reviews', function (Blueprint $table) {
             if (!Schema::hasColumn('reviews', 'reviewable_id')) {
                 $table->unsignedBigInteger('reviewable_id')->nullable()->after('user_id');
@@ -16,56 +18,77 @@ return new class extends Migration {
             }
         });
 
-        // Migrate existing data from event_id -> reviewable
+        // 2. Migrasikan event_id ke polymorphic
         if (Schema::hasColumn('reviews', 'event_id')) {
-            DB::table('reviews')->whereNotNull('event_id')->update([
-                'reviewable_id' => DB::raw('event_id'),
-                'reviewable_type' => 'App\\Models\\Event',
-            ]);
+            DB::table('reviews')
+                ->whereNotNull('event_id')
+                ->update([
+                    'reviewable_id' => DB::raw('event_id'),
+                    'reviewable_type' => 'App\\Models\\Event',
+                ]);
         }
 
+        // 3. Drop FK & drop event_id kalau masih ada
         Schema::table('reviews', function (Blueprint $table) {
-            // Drop old constraints and column if exists
             if (Schema::hasColumn('reviews', 'event_id')) {
-                // Attempt to drop FK if present (name may vary)
-                try { $table->dropForeign(['event_id']); } catch (\Throwable $e) {}
-                try { $table->dropForeign('reviews_event_id_foreign'); } catch (\Throwable $e) {}
-                // Finally drop the column
-                $table->dropColumn('event_id');
+
+                // Drop FK jika ada
+                try { 
+                    $table->dropForeign(['event_id']); 
+                } catch (\Throwable $e) {}
+
+                try { 
+                    $table->dropForeign('reviews_event_id_foreign'); 
+                } catch (\Throwable $e) {}
+
+                // Drop kolom event_id
+                try {
+                    $table->dropColumn('event_id');
+                } catch (\Throwable $e) {}
             }
-            // Indexes for polymorphic
-            $table->index(['reviewable_type', 'reviewable_id'], 'reviews_reviewable_index');
-            // Prevent duplicate reviews by same user on same reviewable
-            try { $table->unique(['user_id', 'reviewable_type', 'reviewable_id'], 'reviews_user_reviewable_unique'); } catch (\Throwable $e) {}
+
+            // Tambah index polymorphic (aman walau sudah ada)
+            try { 
+                $table->index(['reviewable_type', 'reviewable_id'], 'reviews_reviewable_index');
+            } catch (\Throwable $e) {}
+
+            // Unique untuk mencegah review duplikat
+            try { 
+                $table->unique(['user_id', 'reviewable_type', 'reviewable_id'], 'reviews_user_reviewable_unique'); 
+            } catch (\Throwable $e) {}
         });
     }
 
     public function down(): void
     {
+        // 1. Kembalikan event_id
         Schema::table('reviews', function (Blueprint $table) {
             if (!Schema::hasColumn('reviews', 'event_id')) {
                 $table->unsignedBigInteger('event_id')->nullable()->after('user_id');
             }
         });
 
-        // Attempt best-effort rollback for Event only
+        // 2. Migrasi balik hanya untuk Event
         DB::table('reviews')
             ->where('reviewable_type', 'App\\Models\\Event')
             ->update(['event_id' => DB::raw('reviewable_id')]);
 
+        // 3. Drop index & kolom polymorphic
         Schema::table('reviews', function (Blueprint $table) {
-            // Drop new unique and index
             try { $table->dropUnique('reviews_user_reviewable_unique'); } catch (\Throwable $e) {}
+
+            try { $table->dropIndex('reviews_reviewable_index'); } catch (\Throwable $e) {}
+
             if (Schema::hasColumn('reviews', 'reviewable_id')) {
-                $table->dropIndex('reviews_reviewable_index');
-                $table->dropColumn('reviewable_id');
+                try { $table->dropColumn('reviewable_id'); } catch (\Throwable $e) {}
             }
+
             if (Schema::hasColumn('reviews', 'reviewable_type')) {
-                $table->dropColumn('reviewable_type');
+                try { $table->dropColumn('reviewable_type'); } catch (\Throwable $e) {}
             }
-            // Restore unique on (user_id, event_id)
+
+            // Restore unique lama
             try { $table->unique(['user_id', 'event_id']); } catch (\Throwable $e) {}
-            // Re-add FK if needed will be handled by separate migration
         });
     }
 };
