@@ -27,10 +27,6 @@ return new class extends Migration {
         Schema::table('reviews', function (Blueprint $table) {
             // Drop old constraints and column if exists
             if (Schema::hasColumn('reviews', 'event_id')) {
-                // Drop unique index on (user_id, event_id) if present
-                try { $table->dropUnique(['user_id', 'event_id']); } catch (\Throwable $e) {}
-                // Attempt to drop named unique if Laravel named it
-                try { $table->dropUnique('reviews_user_id_event_id_unique'); } catch (\Throwable $e) {}
                 // Attempt to drop FK if present (name may vary)
                 try { $table->dropForeign(['event_id']); } catch (\Throwable $e) {}
                 try { $table->dropForeign('reviews_event_id_foreign'); } catch (\Throwable $e) {}
