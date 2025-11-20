@@ -11,10 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('certificates', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
+        // Tabel `certificates` sudah dibuat oleh migration
+        // 2025_08_26_020700_create_certificates_table.
+        // Migration ini dibuat belakangan dan hanya berisi
+        // schema minimal, jadi kita kosongkan supaya
+        // tidak terjadi error "Base table or view already exists".
+
+        // Tidak ada aksi yang perlu dilakukan di sini.
     }
 
     /**
