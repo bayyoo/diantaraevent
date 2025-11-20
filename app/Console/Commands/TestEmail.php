@@ -3,8 +3,6 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Config;
 
 class TestEmail extends Command
 {
@@ -29,33 +27,28 @@ class TestEmail extends Command
     {
         $email = $this->argument('email');
         
-        $this->info('Testing email configuration...');
-        $this->info('Email driver: ' . config('mail.default'));
-        $this->info('SMTP Host: ' . config('mail.mailers.smtp.host'));
-        $this->info('SMTP Port: ' . config('mail.mailers.smtp.port'));
-        $this->info('From Address: ' . config('mail.from.address'));
+        $this->info('Testing Brevo email configuration via HTTP API...');
         
         try {
-            Mail::raw('This is a test email from Diantara system. If you receive this, your email configuration is working correctly!', function ($message) use ($email) {
-                $message->to($email)
-                        ->subject('Test Email - Diantara System')
-                        ->from(config('mail.from.address'), config('mail.from.name'));
-            });
-            
-            $this->info("✅ Test email sent successfully to: {$email}");
-            $this->info('Please check the inbox (and spam folder) of the recipient.');
-            
+            $html = '<p>This is a test email from Diantara system sent via Brevo HTTP API. If you receive this, your email configuration is working correctly!</p>';
+
+            $sent = app(\App\Services\BrevoEmailService::class)->sendEmail(
+                $email,
+                $email,
+                'Test Email - Diantara System',
+                $html
+            );
+
+            if ($sent) {
+                $this->info("✅ Test email sent successfully to: {$email}");
+                $this->info('Please check the inbox (and spam folder) of the recipient.');
+            } else {
+                $this->error('❌ Failed to send test email via Brevo. Check Brevo API key and sender configuration.');
+            }
+
         } catch (\Exception $e) {
             $this->error("❌ Failed to send test email: " . $e->getMessage());
             $this->error('Error details: ' . $e->getTraceAsString());
-            
-            // Check common issues
-            $this->warn('Common issues to check:');
-            $this->warn('1. MAIL_* environment variables in .env file');
-            $this->warn('2. SMTP credentials (username/password)');
-            $this->warn('3. SMTP host and port settings');
-            $this->warn('4. Firewall blocking SMTP ports');
-            $this->warn('5. Gmail: Enable "Less secure app access" or use App Password');
         }
     }
 }

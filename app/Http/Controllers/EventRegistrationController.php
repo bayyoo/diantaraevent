@@ -134,7 +134,17 @@ class EventRegistrationController extends Controller
 
         // Send token via email
         try {
-            Mail::to($user->email)->send(new EventRegistrationToken($participant, $event));
+            $html = view('emails.event-registration-token', [
+                'participant' => $participant,
+                'event' => $event,
+            ])->render();
+
+            app(\App\Services\BrevoEmailService::class)->sendEmail(
+                $user->email,
+                $user->name,
+                'Token Absensi - ' . $event->title,
+                $html
+            );
         } catch (\Exception $e) {
             \Log::error('Email sending failed: ' . $e->getMessage());
         }

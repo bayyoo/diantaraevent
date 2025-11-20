@@ -45,7 +45,16 @@ class EventApprovalController extends Controller
 
         // Send email notification to event creator
         try {
-            Mail::to($event->creator->email)->send(new EventApproved($event));
+            $html = view('emails.event-approved', [
+                'event' => $event,
+            ])->render();
+
+            app(\App\Services\BrevoEmailService::class)->sendEmail(
+                $event->creator->email,
+                $event->creator->name ?? $event->creator->email,
+                'Event Anda Telah Disetujui - ' . $event->title,
+                $html
+            );
         } catch (\Exception $e) {
             // Log error but don't fail the approval
             \Log::error('Failed to send approval email: ' . $e->getMessage());
@@ -78,7 +87,16 @@ class EventApprovalController extends Controller
 
         // Send email notification to event creator
         try {
-            Mail::to($event->creator->email)->send(new EventRejected($event));
+            $html = view('emails.event-rejected', [
+                'event' => $event,
+            ])->render();
+
+            app(\App\Services\BrevoEmailService::class)->sendEmail(
+                $event->creator->email,
+                $event->creator->name ?? $event->creator->email,
+                'Event Anda Ditolak - ' . $event->title,
+                $html
+            );
         } catch (\Exception $e) {
             // Log error but don't fail the rejection
             \Log::error('Failed to send rejection email: ' . $e->getMessage());

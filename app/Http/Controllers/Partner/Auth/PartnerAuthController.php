@@ -101,10 +101,17 @@ class PartnerAuthController extends Controller
 
         // Send OTP email
         try {
-            Mail::send('emails.partner-otp', ['otp' => $otp, 'name' => $request->name], function ($message) use ($request) {
-                $message->to($request->email)
-                        ->subject('Verifikasi Akun Partner Nexus - Kode OTP');
-            });
+            $html = view('emails.partner-otp', [
+                'otp' => $otp,
+                'name' => $request->name,
+            ])->render();
+
+            app(\App\Services\BrevoEmailService::class)->sendEmail(
+                $request->email,
+                $request->name,
+                'Verifikasi Akun Partner Nexus - Kode OTP',
+                $html
+            );
 
             \Log::info('[Partner OTP] Sent OTP for registration', [
                 'email' => $request->email,
@@ -220,10 +227,17 @@ class PartnerAuthController extends Controller
 
         // Send new OTP email
         try {
-            Mail::send('emails.partner-otp', ['otp' => $otp, 'name' => $registrationData['name']], function ($message) use ($registrationData) {
-                $message->to($registrationData['email'])
-                        ->subject('Verifikasi Akun Partner Nexus - Kode OTP Baru');
-            });
+            $html = view('emails.partner-otp', [
+                'otp' => $otp,
+                'name' => $registrationData['name'],
+            ])->render();
+
+            app(\App\Services\BrevoEmailService::class)->sendEmail(
+                $registrationData['email'],
+                $registrationData['name'],
+                'Verifikasi Akun Partner Nexus - Kode OTP Baru',
+                $html
+            );
 
             \Log::info('[Partner OTP] Resent OTP', [
                 'email' => $registrationData['email'],
