@@ -1454,8 +1454,6 @@
     </script>
     </div> <!-- End Main Content Wrapper -->
 
-    <div style="width: 100vw; margin-left: calc(-50vw + 50%);">
-        @include('components.footer')
-    </div>
+    @include('components.footer')
 </body>
 </html>
