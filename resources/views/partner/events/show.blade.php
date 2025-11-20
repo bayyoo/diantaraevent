@@ -5,7 +5,8 @@
 @section('page-subtitle', '')
 
 @section('content')
-<div class="p-8">
+<div class="py-8 px-4 md:px-8">
+    <div class="max-w-6xl mx-auto">
     <div class="mb-6 flex items-center justify-between">
         <div class="flex items-center space-x-2 text-sm text-gray-600">
             <i class="fas fa-calendar"></i>
@@ -46,12 +47,16 @@
                     @if($event->poster)
                         <div>
                             <div class="text-sm text-gray-600 mb-2">Poster</div>
-                            <img src="{{ Storage::url($event->poster) }}" alt="Poster" class="w-full rounded-lg border">
+                            <div class="w-full max-h-80 bg-gray-50 rounded-lg border flex items-center justify-center overflow-hidden">
+                                <img src="{{ Storage::url($event->poster) }}" alt="Poster" class="w-full h-full object-contain">
+                            </div>
                         </div>
                     @endif
                     @if($event->banners)
                         @foreach(json_decode($event->banners, true) as $bn)
-                            <img src="{{ Storage::url($bn) }}" alt="Banner" class="w-full rounded-lg border">
+                            <div class="w-full max-h-80 bg-gray-50 rounded-lg border flex items-center justify-center overflow-hidden">
+                                <img src="{{ Storage::url($bn) }}" alt="Banner" class="w-full h-full object-contain">
+                            </div>
                         @endforeach
                     @endif
                 </div>
@@ -96,6 +101,7 @@
                 </div>
             </div>
         </div>
+    </div>
     </div>
 </div>
 @endsection

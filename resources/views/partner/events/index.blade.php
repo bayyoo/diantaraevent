@@ -71,8 +71,19 @@
                     <div class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
                         <!-- Event Image/Poster -->
                         <div class="aspect-w-16 aspect-h-9 bg-gradient-to-r from-red-500 to-orange-500 relative">
+                            @php
+                                $bannerThumb = null;
+                                if (empty($event->poster) && !empty($event->banners)) {
+                                    $bannersArray = is_array($event->banners) ? $event->banners : json_decode($event->banners, true);
+                                    if (is_array($bannersArray) && count($bannersArray) > 0) {
+                                        $bannerThumb = $bannersArray[0];
+                                    }
+                                }
+                            @endphp
                             @if($event->poster)
                                 <img src="{{ Storage::url($event->poster) }}" alt="{{ $event->title }}" class="w-full h-full object-cover">
+                            @elseif($bannerThumb)
+                                <img src="{{ Storage::url($bannerThumb) }}" alt="{{ $event->title }}" class="w-full h-full object-cover">
                             @else
                                 <div class="flex items-center justify-center text-white">
                                     <i class="fas fa-calendar text-4xl opacity-50"></i>
@@ -125,16 +136,31 @@
                             
                             <!-- Action Icons -->
                             <div class="flex items-center space-x-2 text-sm">
+                                @if(in_array($event->status, ['published', 'approved']))
+                                <a href="{{ route('public.events.show', $event->slug) }}" target="_blank"
+                                   class="inline-flex items-center px-2.5 py-1 rounded-md border border-gray-200 text-gray-600 hover:text-blue-700 hover:border-blue-200">
+                                    <i class="fas fa-external-link-alt mr-1"></i> Preview
+                                </a>
+                                @endif
                                 <a href="{{ route('diantaranexus.events.show', $event->id) }}" 
                                    class="inline-flex items-center px-2.5 py-1 rounded-md border border-gray-200 text-gray-600 hover:text-blue-700 hover:border-blue-200">
-                                    <i class="fas fa-eye mr-1"></i> Detail
+                                    <i class="fas fa-edit mr-1"></i> Edit
                                 </a>
-                                <a href="#" class="inline-flex items-center px-2.5 py-1 rounded-md border border-gray-200 text-gray-600 hover:text-blue-700 hover:border-blue-200">
-                                    <i class="fas fa-share-alt mr-1"></i> Bagikan
-                                </a>
-                                <a href="#" class="inline-flex items-center px-2.5 py-1 rounded-md border border-gray-200 text-gray-600 hover:text-blue-700 hover:border-blue-200">
-                                    <i class="fas fa-external-link-alt mr-1"></i> Lihat
-                                </a>
+                                @if($event->status === 'draft')
+                                <form action="{{ route('diantaranexus.events.submit-review', $event->id) }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="inline-flex items-center px-2.5 py-1 rounded-md border border-yellow-200 text-yellow-700 hover:text-yellow-800 hover:border-yellow-300">
+                                        <i class="fas fa-paper-plane mr-1"></i> Ajukan Review
+                                    </button>
+                                </form>
+                                @endif
+                                <form action="{{ route('diantaranexus.events.destroy', $event->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus event ini? Tindakan ini tidak dapat dibatalkan.');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="inline-flex items-center px-2.5 py-1 rounded-md border border-red-200 text-red-600 hover:text-red-700 hover:border-red-300">
+                                        <i class="fas fa-trash-alt mr-1"></i> Hapus
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     </div>

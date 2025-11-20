@@ -135,9 +135,9 @@
                         <div class="md:col-span-4">
                             <input type="datetime-local" name="sessions[0][start_at]" class="w-full px-3 py-2 border rounded-lg" />
                         </div>
-                        <div class="md:col-span-4 flex gap-2">
+                        <div class="md:col-span-4 flex flex-col gap-2">
                             <input type="datetime-local" name="sessions[0][end_at]" class="w-full px-3 py-2 border rounded-lg" />
-                            <button type="button" class="px-3 py-2 border rounded remove-session hidden">Hapus</button>
+                            <button type="button" class="w-full px-3 py-2 border rounded remove-session hidden">Hapus</button>
                         </div>
                     </div>
                 </div>
@@ -176,36 +176,6 @@
                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-nexus focus:border-transparent transition-all">{{ old('venue_info') }}</textarea>
             </div>
 
-            <!-- Certificate Settings -->
-            <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
-                <h4 class="font-semibold text-gray-900 mb-3">Certificate Settings</h4>
-                <div class="space-y-4">
-                    <label class="flex items-center space-x-3">
-                        <input type="checkbox" name="has_certificate" value="1" class="h-4 w-4 text-nexus border-gray-300 focus:ring-nexus" {{ old('has_certificate') ? 'checked' : '' }}>
-                        <span class="text-sm text-gray-700">Aktifkan sertifikat untuk event ini</span>
-                    </label>
-
-                    <div class="pl-7 space-y-2">
-                        <div class="text-sm text-gray-600">Pilih template sertifikat</div>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-                            <label class="flex items-center space-x-2">
-                                <input type="radio" name="certificate_template" value="template_a" {{ old('certificate_template', 'template_a') === 'template_a' ? 'checked' : '' }}>
-                                <span>Template A (Default)</span>
-                            </label>
-                            <label class="flex items-center space-x-2">
-                                <input type="radio" name="certificate_template" value="template_b" {{ old('certificate_template') === 'template_b' ? 'checked' : '' }}>
-                                <span>Template B</span>
-                            </label>
-                            <label class="flex items-center space-x-2">
-                                <input type="radio" name="certificate_template" value="custom" {{ old('certificate_template') === 'custom' ? 'checked' : '' }}>
-                                <span>Custom (upload di Step 3)</span>
-                            </label>
-                        </div>
-                        <p class="text-xs text-gray-500">Tanda tangan & cap dikelola dari halaman ORGANISASI.</p>
-                    </div>
-                </div>
-            </div>
-
             <!-- Action Buttons -->
             <div class="flex justify-between items-center pt-6 border-t border-gray-200">
                 <a href="{{ route('diantaranexus.events.index') }}" 
@@ -242,34 +212,111 @@
 </div>
 
 <script>
+    const startDateInput = document.getElementById('start_date');
+    const endDateInput = document.getElementById('end_date');
+    const sessionsList = document.getElementById('sessions-list');
+
+    // Helper: format Date -> value untuk input datetime-local (YYYY-MM-DDTHH:MM)
+    function toLocalInputValue(date) {
+        const pad = (n) => n.toString().padStart(2, '0');
+        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    }
+
+    // Auto-generate sesi berdasarkan rentang start/end jika sesi masih kosong/default
+    function autoGenerateSessionsFromRange() {
+        if (!startDateInput.value || !endDateInput.value) return;
+
+        const start = new Date(startDateInput.value);
+        const end = new Date(endDateInput.value);
+        if (isNaN(start.getTime()) || isNaN(end.getTime()) || end < start) return;
+
+        // Cek apakah user sudah mengisi sesi secara manual (ada nilai selain placeholder)
+        const existingRows = sessionsList.querySelectorAll('.session-row');
+        let hasCustom = false;
+        existingRows.forEach((row) => {
+            const name = row.querySelector('input[name^="sessions"][name$="[name]"]');
+            const startAt = row.querySelector('input[name^="sessions"][name$="[start_at]"]');
+            const endAt = row.querySelector('input[name^="sessions"][name$="[end_at]"]');
+            if ((name && name.value.trim() !== '') || (startAt && startAt.value) || (endAt && endAt.value)) {
+                hasCustom = true;
+            }
+        });
+        if (hasCustom) return; // Jangan timpa sesi yang sudah diisi user
+
+        // Hapus semua baris sesi lama
+        sessionsList.innerHTML = '';
+
+        // Hitung jumlah hari (inklusif)
+        const dayMs = 24 * 60 * 60 * 1000;
+        const startDay = new Date(start.getFullYear(), start.getMonth(), start.getDate(), start.getHours(), start.getMinutes());
+        const endDay = new Date(end.getFullYear(), end.getMonth(), end.getDate(), end.getHours(), end.getMinutes());
+        const daysCount = Math.floor((endDay - startDay) / dayMs) + 1;
+
+        for (let i = 0; i < daysCount; i++) {
+            const idx = i;
+
+            const dayStart = new Date(startDay.getTime() + i * dayMs);
+            const dayEnd = new Date(endDay.getTime());
+            // Untuk hari selain terakhir, pakai jam selesai = jam start + 2 jam
+            if (i < daysCount - 1) {
+                dayEnd.setFullYear(dayStart.getFullYear(), dayStart.getMonth(), dayStart.getDate());
+                dayEnd.setHours(dayStart.getHours() + 2);
+            }
+
+            const row = document.createElement('div');
+            row.className = 'grid grid-cols-1 md:grid-cols-12 gap-3 session-row';
+            row.innerHTML = `
+                <div class="md:col-span-4">
+                    <input type="text" name="sessions[${idx}][name]" class="w-full px-3 py-2 border rounded-lg" placeholder="Nama sesi (Hari ${idx+1})" value="Hari ${idx+1}" />
+                </div>
+                <div class="md:col-span-4">
+                    <input type="datetime-local" name="sessions[${idx}][start_at]" class="w-full px-3 py-2 border rounded-lg" value="${toLocalInputValue(dayStart)}" />
+                </div>
+                <div class="md:col-span-4 flex flex-col gap-2">
+                    <input type="datetime-local" name="sessions[${idx}][end_at]" class="w-full px-3 py-2 border rounded-lg" value="${toLocalInputValue(dayEnd)}" />
+                    <button type="button" class="w-full px-3 py-2 border rounded remove-session">Hapus</button>
+                </div>`;
+            sessionsList.appendChild(row);
+        }
+
+        // Setelah generate, update visibility tombol hapus
+        updateSessionRemoveVisibility();
+    }
+
     // Auto-update end date when start date changes
-    document.getElementById('start_date').addEventListener('change', function() {
+    startDateInput.addEventListener('change', function() {
         const startDate = new Date(this.value);
-        const endDateInput = document.getElementById('end_date');
-        
+        if (!endDateInput) return;
+
         if (startDate) {
-            // Set minimum end date to start date
             endDateInput.min = this.value;
-            
-            // If end date is before start date, update it
+
             if (endDateInput.value && new Date(endDateInput.value) <= startDate) {
                 const suggestedEndDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000); // +2 hours
                 endDateInput.value = suggestedEndDate.toISOString().slice(0, 16);
             }
         }
+
+        autoGenerateSessionsFromRange();
     });
+
+    if (endDateInput) {
+        endDateInput.addEventListener('change', function() {
+            autoGenerateSessionsFromRange();
+        });
+    }
 
     // Sessions editor
     (function(){
-        const list = document.getElementById('sessions-list');
+        const list = sessionsList;
         const addBtn = document.getElementById('add-session');
-        function updateRemoveVisibility(){
+        window.updateSessionRemoveVisibility = function(){
             const rows = list.querySelectorAll('.session-row');
-            rows.forEach((row, idx)=>{
+            rows.forEach((row)=>{
                 const btn = row.querySelector('.remove-session');
                 if (btn) btn.classList.toggle('hidden', rows.length <= 1);
             });
-        }
+        };
         function addRow(){
             const idx = list.querySelectorAll('.session-row').length;
             const div = document.createElement('div');
@@ -281,22 +328,22 @@
                 <div class="md:col-span-4">
                     <input type="datetime-local" name="sessions[${idx}][start_at]" class="w-full px-3 py-2 border rounded-lg" />
                 </div>
-                <div class="md:col-span-4 flex gap-2">
+                <div class="md:col-span-4 flex flex-col gap-2">
                     <input type="datetime-local" name="sessions[${idx}][end_at]" class="w-full px-3 py-2 border rounded-lg" />
-                    <button type="button" class="px-3 py-2 border rounded remove-session">Hapus</button>
+                    <button type="button" class="w-full px-3 py-2 border rounded remove-session">Hapus</button>
                 </div>`;
             list.appendChild(div);
-            updateRemoveVisibility();
+            window.updateSessionRemoveVisibility();
         }
         addBtn.addEventListener('click', addRow);
         list.addEventListener('click', (e)=>{
             if (e.target.classList.contains('remove-session')){
                 const row = e.target.closest('.session-row');
                 row.remove();
-                updateRemoveVisibility();
+                window.updateSessionRemoveVisibility();
             }
         });
-        updateRemoveVisibility();
+        window.updateSessionRemoveVisibility();
     })();
 </script>
 @endsection

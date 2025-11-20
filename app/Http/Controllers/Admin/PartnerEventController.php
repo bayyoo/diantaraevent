@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\PartnerEvent;
+use App\Models\Event;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PartnerEventController extends Controller
 {
@@ -35,12 +37,37 @@ class PartnerEventController extends Controller
      */
     public function approve(PartnerEvent $event)
     {
+        // Update status di tabel partner_events
         $event->update([
             'status' => 'published',
-            'approved_at' => now()
+            'approved_at' => now(),
+            'approved_by' => Auth::id(),
         ]);
 
-        return back()->with('success', 'Partner event has been approved and published.');
+        // Sinkronkan ke tabel events (mirror publik)
+        try {
+            Event::updateOrCreate(
+                ['slug' => $event->slug],
+                [
+                    'title' => $event->title,
+                    'description' => $event->description,
+                    'event_date' => $event->start_date,
+                    'event_time' => null,
+                    'location' => $event->location,
+                    'flyer_path' => $event->poster,
+                    'status' => 'approved', // masuk scope published()
+                    'approved_by' => Auth::id(),
+                    'approved_at' => now(),
+                ]
+            );
+        } catch (\Throwable $e) {
+            \Log::warning('Sync approved PartnerEvent to events table failed: '.$e->getMessage(), [
+                'partner_event_id' => $event->id,
+                'slug' => $event->slug,
+            ]);
+        }
+
+        return back()->with('success', 'Partner event has been approved and published to public catalog.');
     }
 
     /**
@@ -54,5 +81,30 @@ class PartnerEventController extends Controller
         ]);
 
         return back()->with('success', 'Partner event has been rejected.');
+    }
+
+    /**
+     * Withdraw a published partner event from public catalog.
+     */
+    public function withdraw(PartnerEvent $event)
+    {
+        // Tandai event partner sebagai cancelled
+        $event->update([
+            'status' => 'cancelled',
+        ]);
+
+        // Tarik kembali dari tabel events (supaya tidak muncul di publik)
+        try {
+            Event::where('slug', $event->slug)->update([
+                'status' => 'pending',
+            ]);
+        } catch (\Throwable $e) {
+            \Log::warning('Withdraw PartnerEvent from events table failed: '.$e->getMessage(), [
+                'partner_event_id' => $event->id,
+                'slug' => $event->slug,
+            ]);
+        }
+
+        return back()->with('success', 'Partner event has been withdrawn from public catalog.');
     }
 }

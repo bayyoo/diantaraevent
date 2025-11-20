@@ -22,7 +22,6 @@
             }
         }
     </script>
-    <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
     <style>
         body {
             font-family: 'Montserrat', system-ui, sans-serif;
@@ -341,8 +340,13 @@
                     throw new Error((data && (data.error || data.message)) || 'Failed to create payment');
                 }
 
-                // Open Midtrans Snap popup
-                window.snap.pay(data.snap_token);
+                if (!data.payment_url) {
+                    console.error('No payment_url returned from backend:', data);
+                    throw new Error('Payment URL tidak tersedia.');
+                }
+
+                // Redirect ke halaman pembayaran Xendit
+                window.location.href = data.payment_url;
             } catch (err) {
                 console.error('Payment error:', err);
                 alert('Gagal memulai pembayaran: ' + (err && err.message ? err.message : err));

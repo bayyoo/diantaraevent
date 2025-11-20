@@ -39,6 +39,17 @@ class EventController extends Controller
     public function show(Event $event)
     {
         $event->load('creator');
+
+        // Hanya tampilkan ke publik jika event sudah disetujui/dipublikasikan
+        if (!in_array($event->status, ['approved', 'published'])) {
+            $user = auth()->user();
+            $isAdmin = $user && property_exists($user, 'is_admin') && $user->is_admin;
+            $isCreator = $user && $event->created_by === $user->id;
+
+            if (!$isAdmin && !$isCreator) {
+                return redirect()->route('catalog.index')->with('error', 'Event tidak tersedia.');
+            }
+        }
         
         // Check if current user is already registered
         $isRegistered = false;
@@ -91,6 +102,17 @@ class EventController extends Controller
     public function tickets(Event $event)
     {
         $event->load('creator');
+
+        // Guard akses tiket untuk event yang belum disetujui
+        if (!in_array($event->status, ['approved', 'published'])) {
+            $user = auth()->user();
+            $isAdmin = $user && property_exists($user, 'is_admin') && $user->is_admin;
+            $isCreator = $user && $event->created_by === $user->id;
+
+            if (!$isAdmin && !$isCreator) {
+                return redirect()->route('catalog.index')->with('error', 'Event tidak tersedia.');
+            }
+        }
         $tickets = collect();
 
         // If this unified event originated from a partner event, map its tickets
@@ -114,6 +136,18 @@ class EventController extends Controller
     public function payment(Event $event)
     {
         $event->load('creator');
+
+        // Guard akses halaman pembayaran
+        if (!in_array($event->status, ['approved', 'published'])) {
+            $user = auth()->user();
+            $isAdmin = $user && property_exists($user, 'is_admin') && $user->is_admin;
+            $isCreator = $user && $event->created_by === $user->id;
+
+            if (!$isAdmin && !$isCreator) {
+                return redirect()->route('catalog.index')->with('error', 'Event tidak tersedia.');
+            }
+        }
+
         return view('events.payment', compact('event'));
     }
 

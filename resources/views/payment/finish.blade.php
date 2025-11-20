@@ -67,7 +67,7 @@
 
             <!-- Action Buttons -->
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                @if($participant && $participant->payment_status === 'paid')
+                @if($participant)
                     <a href="{{ route('ticket.view', $participant) }}" 
                        class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors">
                         Lihat E-Ticket

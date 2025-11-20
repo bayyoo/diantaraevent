@@ -130,9 +130,6 @@
     </div>
 </div>
 
-<!-- Midtrans Snap JS -->
-<script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
-
 <script>
 document.getElementById('registrationForm').addEventListener('submit', function(e) {
     e.preventDefault();
@@ -174,7 +171,7 @@ document.getElementById('registrationForm').addEventListener('submit', function(
             payButton.textContent = originalText;
         });
     @else
-        // For paid events, create payment
+        // For paid events, create payment (Xendit)
         fetch('{{ route("payment.create") }}', {
             method: 'POST',
             body: formData,
@@ -184,25 +181,10 @@ document.getElementById('registrationForm').addEventListener('submit', function(
         })
         .then(response => response.json())
         .then(data => {
-            if (data.success) {
-                // Open Midtrans Snap
-                snap.pay(data.snap_token, {
-                    onSuccess: function(result) {
-                        window.location.href = '{{ route("payment.finish") }}?order_id=' + data.order_id;
-                    },
-                    onPending: function(result) {
-                        window.location.href = '{{ route("payment.unfinish") }}?order_id=' + data.order_id;
-                    },
-                    onError: function(result) {
-                        window.location.href = '{{ route("payment.error") }}?order_id=' + data.order_id;
-                    },
-                    onClose: function() {
-                        payButton.disabled = false;
-                        payButton.textContent = originalText;
-                    }
-                });
+            if (data.success && data.payment_url) {
+                window.location.href = data.payment_url;
             } else {
-                alert('Gagal membuat pembayaran: ' + data.message);
+                alert('Gagal membuat pembayaran: ' + (data.message || 'Payment URL tidak tersedia.'));
                 payButton.disabled = false;
                 payButton.textContent = originalText;
             }

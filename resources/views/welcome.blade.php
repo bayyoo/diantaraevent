@@ -567,11 +567,15 @@
                 <h2 class="text-2xl font-bold text-gray-900">Exciting Events Just for You</h2>
             </div>
 
-            @if(isset($events) && $events->count() > 0)
+            @php
+                $homepageEvents = isset($homepageEvents) ? $homepageEvents : collect();
+                $excitingEvents = $homepageEvents->take(4);
+            @endphp
+            @if($excitingEvents->count() > 0)
                 <!-- Modern Event Cards -->
                 <div class="mb-4 events-grid-container">
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                            @foreach($events->take(5) as $event)
+                            @foreach($excitingEvents as $event)
                         @php
                             // Determine category based on event title
                             $category = 'General';
@@ -679,17 +683,56 @@
                 
                 <!-- Second Section: Latest Events -->
                 @if($events->count() > 6)
-                    <div class="mb-6 defer-section">
-                        <div class="flex justify-between items-center mb-4">
-                            <div>
-                                <h2 class="text-xl font-bold text-gray-900">Latest Events on Diantara</h2>
-                                <p class="text-sm text-gray-600 mt-1">If you're always up for something new, these freshly dropped events are worth to check!</p>
-                            </div>
-                            <a href="{{ route('catalog.index') }}" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors">Lihat Semua</a>
-                        </div>
-                        
-                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                            @foreach($events->skip(5)->take(5) as $event)
+                    <!-- Latest Events Section -->
+        <div class="mb-16">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-900 mb-2">Latest Events on Diantara</h2>
+                    <p class="text-gray-600">If you're always up for something new, these freshly dropped events are worth to check!</p>
+                </div>
+                <a href="{{ route('catalog.index') }}" class="text-primary hover:text-primary-dark font-semibold flex items-center">
+                    View All <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                @php
+                    $latestImages = [
+                        'SCREAM OK DANCE 2025' => 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=400&fit=crop&crop=center',
+                        'BERISIK ASIK Music Festival' => 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=600&h=400&fit=crop&crop=center',
+                        'SUCI FEST 2025' => 'https://images.unsplash.com/photo-1571266028243-e68f857f258a?w=600&h=400&fit=crop&crop=center',
+                        'Disney THE LITTLE MERMAID JR' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=400&fit=crop&crop=center',
+                        'Workshop Laravel untuk Pemula' => 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&h=400&fit=crop&crop=center',
+                        'Tech Talk: AI & Machine Learning' => 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=600&h=400&fit=crop&crop=center',
+                        'JAZZ FESTIVAL 2025' => 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=400&fit=crop&crop=center',
+                        'ROCK N ROLL NIGHT' => 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=600&h=400&fit=crop&crop=center',
+                        'MAGIC SHOW SPECTACULAR' => 'https://images.unsplash.com/photo-1577083552431-6e5fd01988ec?w=600&h=400&fit=crop&crop=center',
+                        'Workshop Digital Marketing' => 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=400&fit=crop&crop=center',
+                        'Workshop Photography & Videography' => 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&h=400&fit=crop&crop=center',
+                        'Workshop UI/UX Design' => 'https://images.unsplash.com/photo-1558655146-d09347e92766?w=600&h=400&fit=crop&crop=center',
+                        'Workshop Data Science & AI' => 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=600&h=400&fit=crop&crop=center',
+                        'Seminar Entrepreneurship' => 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=600&h=400&fit=crop&crop=center',
+                        'Fintech Conference 2025' => 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=600&h=400&fit=crop&crop=center',
+                        'Blockchain & Cryptocurrency Summit' => 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=600&h=400&fit=crop&crop=center',
+                        'IMPACTNATION JAPAN FESTIVAL 2025' => 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=400&fit=crop&crop=center',
+                        'MAGNIFEST 2025' => 'https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=600&h=400&fit=crop&crop=center',
+                        'FESTIVAL KULINER NUSANTARA' => 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=600&h=400&fit=crop&crop=center',
+                        'FESTIVAL BUDAYA BALI' => 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=600&h=400&fit=crop&crop=center',
+                        'GAMING COMPETITION 2025' => 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&h=400&fit=crop&crop=center',
+                        'FUTSAL CHAMPIONSHIP' => 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=600&h=400&fit=crop&crop=center',
+                        'COOKING COMPETITION' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=400&fit=crop&crop=center',
+                        'ART EXHIBITION: Modern Indonesian Art' => 'https://images.unsplash.com/photo-1577083552431-6e5fd01988ec?w=600&h=400&fit=crop&crop=center',
+                        'PHOTOGRAPHY EXHIBITION' => 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&h=400&fit=crop&crop=center',
+                        'BOOK FAIR & LITERATURE FESTIVAL' => 'https://images.unsplash.com/photo-1558655146-d09347e92766?w=600&h=400&fit=crop&crop=center',
+                        'YOGA & MEDITATION WORKSHOP' => 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=400&fit=crop&crop=center',
+                        'HEALTH & FITNESS EXPO' => 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&h=400&fit=crop&crop=center',
+                        'STARTUP PITCH COMPETITION' => 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=400&fit=crop&crop=center',
+                        'BUSINESS NETWORKING EVENT' => 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=600&h=400&fit=crop&crop=center',
+                        'ROBOTICS COMPETITION' => 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=600&h=400&fit=crop&crop=center',
+                        'HACKATHON 2025' => 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=600&h=400&fit=crop&crop=center',
+                    ];
+                @endphp
+                @foreach($homepageEvents->skip(4)->take(4) as $event)
                                 @php
                                     // Determine category based on event title
                                     $category = 'General';

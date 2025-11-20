@@ -34,7 +34,7 @@ class EventCatalogController extends Controller
             $query->where('title', 'like', "%{$request->category}%");
         }
 
-        // Filter by date
+        // Filter by date (optional). Jika tidak dipilih, tampilkan SEMUA event published.
         if ($request->has('date_filter') && $request->date_filter) {
             $dateFilter = $request->date_filter;
             
@@ -59,9 +59,6 @@ class EventCatalogController extends Controller
                     $query->where('event_date', '<', Carbon::now());
                     break;
             }
-        } else {
-            // Default: show upcoming events first
-            $query->where('event_date', '>=', Carbon::today());
         }
 
         // Sort by date (closest first by default)

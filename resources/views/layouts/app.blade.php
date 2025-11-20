@@ -39,8 +39,17 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <a href="{{ route('home') }}" class="text-2xl font-bold text-gray-900">
-                        <span class="text-primary">DIANTARA</span>
+                    <a href="{{ route('home') }}" class="flex items-center space-x-2">
+                        <!-- Logo Icon - sama seperti navigation.blade -->
+                        <div class="w-9 h-9 flex items-center justify-center">
+                            <img src="{{ asset('storage/images/logos/diantara.png') }}"
+                                 alt="Diantara Logo"
+                                 class="w-8 h-8 object-contain">
+                        </div>
+                        <!-- Logo Text -->
+                        <div class="flex flex-col">
+                            <span class="text-base md:text-lg font-bold text-gray-900 leading-tight">DIANTARA</span>
+                        </div>
                     </a>
                 </div>
                 

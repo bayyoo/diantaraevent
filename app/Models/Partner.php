@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use App\Notifications\PartnerResetPasswordNotification;
 
 class Partner extends Authenticatable
 {
@@ -82,5 +83,18 @@ class Partner extends Authenticatable
     public function isPending()
     {
         return $this->status === 'pending';
+    }
+
+    /**
+     * Send the password reset notification for Partner guard.
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        $url = url(route('diantaranexus.password.reset', [
+            'token' => $token,
+            'email' => $this->email,
+        ], false));
+
+        $this->notify(new PartnerResetPasswordNotification($url));
     }
 }

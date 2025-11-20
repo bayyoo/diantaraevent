@@ -79,6 +79,11 @@ class CertificateService
     private function generateDefaultCertificate(Event $event, User $user, string $certificateNumber): string
     {
         $org = $this->getOrganizationSignatureData($event);
+        $certificateMeta = $event->metadata['certificate'] ?? [];
+        $logoPath = $certificateMeta['logo_path'] ?? null;
+        $logoFullPath = $logoPath
+            ? public_path('storage/' . $logoPath)
+            : public_path('images/diantara-nexus-logo.png');
         $data = [
             'event' => $event,
             'user' => $user,
@@ -86,6 +91,7 @@ class CertificateService
             'generated_date' => Carbon::now()->format('d F Y'),
             'event_date' => Carbon::parse($event->event_date)->format('d F Y'),
             'org' => $org,
+            'logo_path' => $logoFullPath,
         ];
 
         $view = $event->certificate_template === 'template_b'
@@ -108,6 +114,11 @@ class CertificateService
     {
         // For custom certificates, we'll overlay text/signatures on uploaded image/PDF-like background
         $org = $this->getOrganizationSignatureData($event);
+        $certificateMeta = $event->metadata['certificate'] ?? [];
+        $logoPath = $certificateMeta['logo_path'] ?? null;
+        $logoFullPath = $logoPath
+            ? public_path('storage/' . $logoPath)
+            : public_path('images/diantara-nexus-logo.png');
         $data = [
             'event' => $event,
             'user' => $user,
@@ -116,6 +127,7 @@ class CertificateService
             'event_date' => Carbon::parse($event->event_date)->format('d F Y'),
             'custom_template_path' => $event->custom_certificate_path,
             'org' => $org,
+            'logo_path' => $logoFullPath,
         ];
 
         // Reuse template A layout that displays background if provided

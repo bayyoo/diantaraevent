@@ -13,30 +13,6 @@
                 <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
                     <i class="fas fa-check text-xs"></i>
                 </div>
-
-            <!-- Custom Certificate Template (shown if chosen in Step 1) -->
-            <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
-                <h4 class="font-medium text-gray-900 mb-3">Custom Certificate Template</h4>
-                <p class="text-sm text-gray-600 mb-4">Jika di Step 1 memilih template <strong>Custom</strong>, unggah file template sertifikat (PDF/PNG/JPG). Tanda tangan & cap akan ditumpuk di atas template.</p>
-                <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center">
-                    <div id="customCertPreview" class="mb-4">
-                        @php($customPath = optional(\App\Models\Event::where('slug', $event->slug)->first())->custom_certificate_path)
-                        @if($customPath)
-                            <img src="{{ Storage::url($customPath) }}" alt="Custom certificate" class="mx-auto max-h-48 rounded-lg">
-                            <p class="text-sm text-gray-600 mt-2">Current custom template</p>
-                        @else
-                            <i class="fas fa-file-image text-4xl text-gray-300 mb-3"></i>
-                            <p class="text-gray-600">Upload custom certificate file</p>
-                            <p class="text-sm text-gray-500">PDF/PNG/JPG up to 5MB</p>
-                        @endif
-                    </div>
-                    <input type="file" id="custom_certificate" name="custom_certificate" accept="application/pdf,image/*" class="hidden" onchange="previewImage(this, 'customCertPreview')">
-                    <button type="button" onclick="document.getElementById('custom_certificate').click()" class="border border-nexus text-nexus px-6 py-2 rounded-lg hover:bg-nexus hover:text-white transition-all">
-                        <i class="fas fa-upload mr-2"></i>
-                        {{ $customPath ? 'Ganti File' : 'Upload File' }}
-                    </button>
-                </div>
-            </div>
                 <span class="ml-3 text-sm text-green-600">Basic Information</span>
             </div>
             <div class="flex items-center">
@@ -130,6 +106,235 @@
                             class="nexus-gradient text-white px-6 py-2 rounded-lg hover:opacity-90 transition-all">
                         <i class="fas fa-upload mr-2"></i>
                         {{ $event->poster ? 'Change Poster' : 'Upload Poster' }}
+                    </button>
+                </div>
+            </div>
+
+            @php
+                $certMeta = $event->metadata['certificate'] ?? ['has_certificate' => false, 'certificate_template' => 'template_a'];
+                $certHas = old('has_certificate', $certMeta['has_certificate'] ?? false);
+                $certTemplate = old('certificate_template', $certMeta['certificate_template'] ?? 'template_a');
+                $certText = $certMeta['text'] ?? [];
+                $certOrgName = old('cert_org_name', $certText['org_name'] ?? optional($event->organization)->name ?? 'Your Organization');
+                $certPresentedText = old('cert_presented_text', $certText['presented_text'] ?? 'Proudly Presented To');
+                $certBody = old('cert_body', $certText['body'] ?? 'Atas pencapaian dan partisipasi dalam acara '.$event->title.' yang diselenggarakan oleh organisasi kamu.');
+                $certDateLabel = old('cert_date_label', $certText['date_label'] ?? 'Date');
+                $certSignatureLabel = old('cert_signature_label', $certText['signature_label'] ?? 'Signature');
+                $certLogoPath = $certMeta['logo_path'] ?? null;
+                $defaultCertLogo = asset('images/diantara-nexus-logo.png');
+                $certLogoUrl = $certLogoPath ? asset('storage/'.$certLogoPath) : $defaultCertLogo;
+                $customPath = optional(\App\Models\Event::where('slug', $event->slug)->first())->custom_certificate_path ?? null;
+            @endphp
+
+            <!-- Certificate Settings -->
+            <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                <h4 class="font-semibold text-gray-900 mb-3">Certificate Settings</h4>
+                <div class="space-y-4">
+                    <label class="flex items-center space-x-3">
+                        <input type="checkbox" name="has_certificate" value="1" class="h-4 w-4 text-nexus border-gray-300 focus:ring-nexus" {{ $certHas ? 'checked' : '' }} id="has_certificate_toggle">
+                        <span class="text-sm text-gray-700">Aktifkan sertifikat untuk event ini</span>
+                    </label>
+
+                    <div class="pl-7 space-y-4" id="certificateOptionsWrapper">
+                        <div class="space-y-2">
+                            <div class="text-sm text-gray-600">Pilih template sertifikat</div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                                <label class="flex items-center space-x-2">
+                                    <input type="radio" name="certificate_template" value="template_a" {{ $certTemplate === 'template_a' ? 'checked' : '' }}>
+                                    <span>Template A (Default)</span>
+                                </label>
+                                <label class="flex items-center space-x-2">
+                                    <input type="radio" name="certificate_template" value="template_b" {{ $certTemplate === 'template_b' ? 'checked' : '' }}>
+                                    <span>Template B</span>
+                                </label>
+                                <label class="flex items-center space-x-2">
+                                    <input type="radio" name="certificate_template" value="custom" {{ $certTemplate === 'custom' ? 'checked' : '' }}>
+                                    <span>Custom (upload file di bawah)</span>
+                                </label>
+                            </div>
+                            <p class="text-xs text-gray-500">Nama peserta akan diisi otomatis dari data pendaftar. Tanda tangan & cap dikelola dari halaman ORGANISASI.</p>
+                        </div>
+
+                        <!-- Text customization -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 text-xs md:text-sm">
+                            <div>
+                                <label class="block font-medium text-gray-700 mb-1">Nama organisasi di sertifikat</label>
+                                <input id="cert_org_name_input" type="text" name="cert_org_name" value="{{ $certOrgName }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-nexus focus:border-transparent" />
+                            </div>
+                            <div>
+                                <label class="block font-medium text-gray-700 mb-1">Kalimat sebelum nama peserta</label>
+                                <input id="cert_presented_text_input" type="text" name="cert_presented_text" value="{{ $certPresentedText }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-nexus focus:border-transparent" />
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block font-medium text-gray-700 mb-1">Paragraf deskripsi</label>
+                                <textarea id="cert_body_input" name="cert_body" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-nexus focus-border-transparent">{{ $certBody }}</textarea>
+                            </div>
+                            <div>
+                                <label class="block font-medium text-gray-700 mb-1">Label tanggal</label>
+                                <input id="cert_date_label_input" type="text" name="cert_date_label" value="{{ $certDateLabel }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-nexus focus:border-transparent" />
+                            </div>
+                            <div>
+                                <label class="block font-medium text-gray-700 mb-1">Label tanda tangan</label>
+                                <input id="cert_signature_label_input" type="text" name="cert_signature_label" value="{{ $certSignatureLabel }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-nexus focus:border-transparent" />
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block font-medium text-gray-700 mb-1">Logo sertifikat (PNG)</label>
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-20 h-20 border border-gray-200 rounded-lg bg-white flex items-center justify-center overflow-hidden">
+                                        <img src="{{ $certLogoUrl }}" alt="Certificate Logo" class="max-w-full max-h-full object-contain">
+                                    </div>
+                                    <div class="flex-1 space-y-1">
+                                        <input type="file" name="certificate_logo" accept="image/png,image/jpeg" class="block w-full text-xs text-gray-600" />
+                                        <p class="text-[11px] text-gray-400">Kalau tidak di-upload, otomatis pakai logo default DIANTARA.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Certificate Preview -->
+                        <div class="mt-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="text-xs font-medium text-gray-600">Preview sertifikat</div>
+                                <a href="{{ route('diantaranexus.events.certificate.preview', $event->id) }}" target="_blank" class="text-[11px] md:text-xs text-nexus hover:text-nexus-dark font-medium">
+                                    Buka full preview
+                                </a>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="md:col-span-3">
+                                    <div id="certPreviewTemplateA" class="certificate-preview rounded-xl border border-gray-300 bg-white shadow-sm overflow-hidden {{ $certTemplate === 'template_a' ? '' : 'hidden' }}">
+                                        <div class="h-6 bg-gradient-to-r from-blue-500 via-sky-400 to-blue-600"></div>
+                                        <div class="p-4 md:p-6">
+                                            <div class="flex items-start justify-between mb-6">
+                                                <div class="flex items-center space-x-2">
+                                                    <div class="h-8 w-8 rounded-full border border-blue-400 flex items-center justify-center overflow-hidden bg-white">
+                                                        <img src="{{ $certLogoUrl }}" alt="Logo" class="max-w-full max-h-full object-contain">
+                                                    </div>
+                                                    <div class="text-[10px] md:text-xs text-gray-500">
+                                                        <span class="cert-editable" data-target-input="cert_org_name_input" contenteditable="true">{{ $certOrgName }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="text-center mb-1">
+                                                <div class="text-sm md:text-base tracking-[0.2em] text-gray-700 uppercase">Certificate</div>
+                                                <div class="text-[10px] md:text-xs text-gray-500 tracking-[0.3em] uppercase">of Achievement</div>
+                                            </div>
+                                            <div class="mt-5 text-center">
+                                                <div class="text-[10px] md:text-xs text-gray-500 mb-1">
+                                                    <span class="cert-editable" data-target-input="cert_presented_text_input" contenteditable="true">{{ $certPresentedText }}</span>
+                                                </div>
+                                                <div class="text-base md:text-lg font-semibold text-sky-600 mb-2">Nama Peserta</div>
+                                                <div class="text-[11px] md:text-sm text-gray-600 max-w-md mx-auto">
+                                                    <span class="cert-editable" data-target-input="cert_body_input" contenteditable="true">{{ $certBody }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="mt-8 flex justify-between items-end text-[10px] md:text-xs text-gray-500">
+                                                <div class="text-center">
+                                                    <div class="h-8 border-b border-gray-300 mb-1 w-32 mx-auto"></div>
+                                                    <div><span class="cert-editable" data-target-input="cert_date_label_input" contenteditable="true">{{ $certDateLabel }}</span></div>
+                                                </div>
+                                                <div class="text-center">
+                                                    <div class="h-8 border-b border-gray-300 mb-1 w-32 mx-auto"></div>
+                                                    <div><span class="cert-editable" data-target-input="cert_signature_label_input" contenteditable="true">{{ $certSignatureLabel }}</span></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="h-6 bg-gradient-to-r from-blue-600 via-sky-400 to-blue-500"></div>
+                                    </div>
+
+                                    <div id="certPreviewTemplateB" class="certificate-preview relative rounded-xl border border-gray-300 bg-white shadow-sm overflow-hidden {{ $certTemplate === 'template_b' ? '' : 'hidden' }}">
+                                        <div class="absolute inset-x-0 top-0 flex justify-between p-3">
+                                            <div class="flex space-x-1">
+                                                <div class="w-2 h-2 bg-orange-500"></div>
+                                                <div class="w-2 h-2 bg-blue-500"></div>
+                                                <div class="w-2 h-2 bg-indigo-500"></div>
+                                            </div>
+                                            <div class="flex space-x-1">
+                                                <div class="w-2 h-2 bg-indigo-500"></div>
+                                                <div class="w-2 h-2 bg-blue-500"></div>
+                                                <div class="w-2 h-2 bg-orange-500"></div>
+                                            </div>
+                                        </div>
+                                        <div class="p-6 md:p-8">
+                                            <div class="flex justify-between items-center mb-6">
+                                                <div class="flex items-center space-x-2">
+                                                    <div class="h-8 w-8 rounded-full border border-gray-400 flex items-center justify-center overflow-hidden bg-white">
+                                                        <img src="{{ $certLogoUrl }}" alt="Logo" class="max-w-full max-h-full object-contain">
+                                                    </div>
+                                                    <div class="text-[10px] md:text-xs text-gray-500 uppercase tracking-wide">
+                                                        <span class="cert-editable" data-target-input="cert_org_name_input" contenteditable="true">{{ $certOrgName }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="text-center mb-5">
+                                                <div class="text-base md:text-xl font-extrabold tracking-[0.2em] text-blue-900 uppercase">Certificate</div>
+                                                <div class="text-[10px] md:text-xs text-gray-500 tracking-[0.35em] uppercase">of Achievement</div>
+                                            </div>
+                                            <div class="text-center mb-5">
+                                                <div class="text-[10px] md:text-xs text-blue-700 font-semibold tracking-wide mb-1">
+                                                    <span class="cert-editable" data-target-input="cert_presented_text_input" contenteditable="true">{{ $certPresentedText }}</span>
+                                                </div>
+                                                <div class="text-lg md:text-2xl font-semibold text-orange-500">Nama Peserta</div>
+                                            </div>
+                                            <div class="text-[11px] md:text-sm text-gray-600 max-w-xl mx-auto mb-8">
+                                                <span class="cert-editable" data-target-input="cert_body_input" contenteditable="true">{{ $certBody }}</span>
+                                            </div>
+                                            <div class="mt-6 flex justify-between items-end text-[10px] md:text-xs text-gray-500">
+                                                <div>
+                                                    <div class="mb-1">&nbsp;</div>
+                                                    <div class="h-8 border-b border-gray-300 mb-1 w-32"></div>
+                                                    <div><span class="cert-editable" data-target-input="cert_date_label_input" contenteditable="true">{{ $certDateLabel }}</span></div>
+                                                </div>
+                                                <div class="text-right">
+                                                    <div class="h-8 border-b border-gray-300 mb-1 w-32 mx-auto"></div>
+                                                    <div><span class="cert-editable" data-target-input="cert_signature_label_input" contenteditable="true">{{ $certSignatureLabel }}</span></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="absolute inset-x-0 bottom-0 flex justify-between p-3">
+                                            <div class="flex space-x-1">
+                                                <div class="w-2 h-2 bg-indigo-500"></div>
+                                                <div class="w-2 h-2 bg-blue-500"></div>
+                                                <div class="w-2 h-2 bg-orange-500"></div>
+                                            </div>
+                                            <div class="flex space-x-1">
+                                                <div class="w-2 h-2 bg-orange-500"></div>
+                                                <div class="w-2 h-2 bg-blue-500"></div>
+                                                <div class="w-2 h-2 bg-indigo-500"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div id="certPreviewCustom" class="certificate-preview rounded-xl border border-dashed border-gray-300 bg-white/60 flex flex-col items-center justify-center py-10 {{ $certTemplate === 'custom' ? '' : 'hidden' }}">
+                                        <div class="text-sm md:text-base font-medium text-gray-800 mb-1">Custom template</div>
+                                        <div class="text-[11px] md:text-sm text-gray-600 mb-2 text-center max-w-md">Sertifikat akan menggunakan file yang kamu upload di bagian <span class="font-semibold">Custom Certificate Template</span> di bawah.</div>
+                                        <div class="text-[10px] md:text-xs text-gray-500">Nama peserta, tanda tangan & cap tetap akan ditempel otomatis di atas file tersebut.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Custom Certificate Template (untuk opsi Custom) -->
+            <div id="customCertificateBlock" class="bg-white rounded-xl p-6 border border-gray-200 {{ ($certTemplate === 'custom' && $certHas) ? '' : 'hidden' }}">
+                <h4 class="font-medium text-gray-900 mb-3">Custom Certificate Template</h4>
+                <p class="text-sm text-gray-600 mb-4">Jika memilih template <strong>Custom</strong>, unggah file template sertifikat (PDF/PNG/JPG). Tanda tangan & cap akan ditumpuk di atas template, sedangkan nama peserta akan di-render otomatis.</p>
+                <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center">
+                    <div id="customCertPreview" class="mb-4">
+                        @if($customPath)
+                            <img src="{{ Storage::url($customPath) }}" alt="Custom certificate" class="mx-auto max-h-48 rounded-lg">
+                            <p class="text-sm text-gray-600 mt-2">Current custom template</p>
+                        @else
+                            <i class="fas fa-file-image text-4xl text-gray-300 mb-3"></i>
+                            <p class="text-gray-600">Upload custom certificate file</p>
+                            <p class="text-sm text-gray-500">PDF/PNG/JPG up to 5MB</p>
+                        @endif
+                    </div>
+                    <input type="file" id="custom_certificate" name="custom_certificate" accept="application/pdf,image/*" class="hidden" onchange="previewImage(this, 'customCertPreview')">
+                    <button type="button" onclick="document.getElementById('custom_certificate').click()" class="border border-nexus text-nexus px-6 py-2 rounded-lg hover:bg-nexus hover:text-white transition-all">
+                        <i class="fas fa-upload mr-2"></i>
+                        {{ $customPath ? 'Ganti File' : 'Upload File' }}
                     </button>
                 </div>
             </div>
@@ -345,8 +550,84 @@ function useTemplate() {
 
 By registering for this event, you agree to these terms and conditions.`;
 
-    document.getElementById('terms_conditions').value = template;
+    const textarea = document.getElementById('terms_conditions');
+    if (textarea) {
+        textarea.value = template;
+        textarea.focus();
+    }
 }
+
+// Inline editing for certificate preview (Template A & B)
+document.addEventListener('DOMContentLoaded', function () {
+    // When editing in preview, update form inputs
+    document.querySelectorAll('.cert-editable').forEach(function (el) {
+        el.addEventListener('input', function () {
+            const targetId = el.getAttribute('data-target-input');
+            if (!targetId) return;
+            const target = document.getElementById(targetId);
+            if (!target) return;
+
+            const value = el.innerText.trim();
+            if (target.tagName === 'TEXTAREA' || target.tagName === 'INPUT') {
+                target.value = value;
+            }
+        });
+    });
+
+    // When typing in inputs, update preview text (keeps dua arah)
+    const mapping = [
+        { inputId: 'cert_org_name_input', selector: '[data-target-input="cert_org_name_input"]' },
+        { inputId: 'cert_presented_text_input', selector: '[data-target-input="cert_presented_text_input"]' },
+        { inputId: 'cert_body_input', selector: '[data-target-input="cert_body_input"]' },
+        { inputId: 'cert_date_label_input', selector: '[data-target-input="cert_date_label_input"]' },
+        { inputId: 'cert_signature_label_input', selector: '[data-target-input="cert_signature_label_input"]' },
+    ];
+
+    mapping.forEach(function (map) {
+        const input = document.getElementById(map.inputId);
+        if (!input) return;
+
+        const updatePreview = function () {
+            const value = input.value;
+            document.querySelectorAll(map.selector).forEach(function (el) {
+                el.innerText = value;
+            });
+        };
+
+        input.addEventListener('input', updatePreview);
+    });
+
+    // Toggle visibility of Custom Certificate block based on template selection
+    const customBlock = document.getElementById('customCertificateBlock');
+    const hasCertToggle = document.getElementById('has_certificate_toggle');
+    const certTemplateRadios = document.querySelectorAll('input[name="certificate_template"]');
+
+    function updateCustomBlockVisibility() {
+        if (!customBlock) return;
+        const hasCert = hasCertToggle ? hasCertToggle.checked : true;
+        let selectedTemplate = 'template_a';
+        certTemplateRadios.forEach(function (radio) {
+            if (radio.checked) {
+                selectedTemplate = radio.value;
+            }
+        });
+        const shouldShow = hasCert && selectedTemplate === 'custom';
+        if (shouldShow) {
+            customBlock.classList.remove('hidden');
+        } else {
+            customBlock.classList.add('hidden');
+        }
+    }
+
+    certTemplateRadios.forEach(function (radio) {
+        radio.addEventListener('change', updateCustomBlockVisibility);
+    });
+    if (hasCertToggle) {
+        hasCertToggle.addEventListener('change', updateCustomBlockVisibility);
+    }
+
+    updateCustomBlockVisibility();
+})
 
 // Handle radio button changes
 document.querySelectorAll('input[name="submit_action"]').forEach(radio => {
@@ -360,6 +641,44 @@ document.querySelectorAll('input[name="submit_action"]').forEach(radio => {
             buttons[1].textContent = 'Save as Draft';
         }
     });
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    const hasCertToggle = document.getElementById('has_certificate_toggle');
+    const optionsWrapper = document.getElementById('certificateOptionsWrapper');
+    const templateRadios = document.querySelectorAll('input[name="certificate_template"]');
+
+    function updateOptionsVisibility() {
+        if (!hasCertToggle || !optionsWrapper) return;
+        optionsWrapper.classList.toggle('hidden', !hasCertToggle.checked);
+    }
+
+    function updateCertPreview() {
+        const selected = document.querySelector('input[name="certificate_template"]:checked');
+        const value = selected ? selected.value : null;
+        const views = {
+            template_a: document.getElementById('certPreviewTemplateA'),
+            template_b: document.getElementById('certPreviewTemplateB'),
+            custom: document.getElementById('certPreviewCustom'),
+        };
+        Object.keys(views).forEach((key) => {
+            if (views[key]) {
+                views[key].classList.toggle('hidden', key !== value);
+            }
+        });
+    }
+
+    if (hasCertToggle) {
+        hasCertToggle.addEventListener('change', updateOptionsVisibility);
+        updateOptionsVisibility();
+    }
+
+    if (templateRadios.length) {
+        templateRadios.forEach((r) => {
+            r.addEventListener('change', updateCertPreview);
+        });
+        updateCertPreview();
+    }
 });
 </script>
 @endsection

@@ -136,14 +136,42 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         @foreach($recentEvents as $event)
                         <div class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
-                            <div class="aspect-w-16 aspect-h-9 bg-gradient-to-r from-red-500 to-orange-500">
-                                <div class="flex items-center justify-center text-white">
-                                    <i class="fas fa-calendar text-4xl opacity-50"></i>
+                            <!-- Event Image/Poster (style disamakan dengan page EVENT organizer) -->
+                            <div class="aspect-w-16 aspect-h-9 bg-gradient-to-r from-red-500 to-orange-500 relative">
+                                @if($event->poster)
+                                    <img src="{{ Storage::url($event->poster) }}" alt="{{ $event->title }}" class="w-full h-full object-cover">
+                                @else
+                                    <div class="flex items-center justify-center text-white">
+                                        <i class="fas fa-calendar text-4xl opacity-50"></i>
+                                    </div>
+                                @endif
+
+                                <!-- Status Badge -->
+                                <div class="absolute top-3 left-3">
+                                    @if($event->status === 'draft')
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-100 text-blue-800">
+                                            <i class="fas fa-circle w-2 h-2 mr-1"></i>
+                                            DRAFT
+                                        </span>
+                                    @elseif($event->status === 'published')
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-100 text-blue-800">
+                                            <i class="fas fa-circle w-2 h-2 mr-1"></i>
+                                            TAYANG
+                                        </span>
+                                    @elseif($event->status === 'pending_review')
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-yellow-100 text-yellow-800">
+                                            <i class="fas fa-circle w-2 h-2 mr-1"></i>
+                                            REVIEW
+                                        </span>
+                                    @endif
                                 </div>
                             </div>
+
+                            <!-- Event Info + Actions (disamakan layoutnya) -->
                             <div class="p-4">
                                 <h4 class="font-semibold text-gray-900 mb-2">{{ $event->title }}</h4>
-                                <div class="space-y-1 text-sm text-gray-600">
+
+                                <div class="space-y-1 text-sm text-gray-600 mb-3">
                                     <div class="flex items-center">
                                         <i class="fas fa-calendar w-4 mr-2"></i>
                                         <span>
@@ -162,18 +190,41 @@
                                     </div>
                                     <div class="flex items-center">
                                         <i class="fas fa-ticket-alt w-4 mr-2"></i>
-                                        <span>Tiket Tersisa dan Dipesan</span>
+                                        <span>{{ $event->tickets->count() }} Tiket Terjual dan Dipesan</span>
                                     </div>
                                     <div class="flex items-center">
                                         <i class="fas fa-eye w-4 mr-2"></i>
-                                        <span>Lihat Detail</span>
+                                        <span>{{ $event->views ?? 0 }} Kali Dilihat</span>
                                     </div>
                                 </div>
-                                <div class="flex space-x-2 mt-3">
-                                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                                        <i class="fas fa-circle w-2 h-2 mr-1"></i>
-                                        {{ ucfirst($event->status) }}
-                                    </span>
+
+                                <!-- Action buttons -->
+                                <div class="flex items-center space-x-2 text-sm">
+                                    @if(in_array($event->status, ['published', 'approved']))
+                                    <a href="{{ route('public.events.show', $event->slug) }}" target="_blank"
+                                       class="inline-flex items-center px-2.5 py-1 rounded-md border border-gray-200 text-gray-600 hover:text-blue-700 hover:border-blue-200">
+                                        <i class="fas fa-external-link-alt mr-1"></i> Preview
+                                    </a>
+                                    @endif
+                                    <a href="{{ route('diantaranexus.events.show', $event->id) }}" 
+                                       class="inline-flex items-center px-2.5 py-1 rounded-md border border-gray-200 text-gray-600 hover:text-blue-700 hover:border-blue-200">
+                                        <i class="fas fa-edit mr-1"></i> Edit
+                                    </a>
+                                    @if($event->status === 'draft')
+                                    <form action="{{ route('diantaranexus.events.submit-review', $event->id) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="inline-flex items-center px-2.5 py-1 rounded-md border border-yellow-200 text-yellow-700 hover:text-yellow-800 hover:border-yellow-300">
+                                            <i class="fas fa-paper-plane mr-1"></i> Ajukan Review
+                                        </button>
+                                    </form>
+                                    @endif
+                                    <form action="{{ route('diantaranexus.events.destroy', $event->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus event ini? Tindakan ini tidak dapat dibatalkan.');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="inline-flex items-center px-2.5 py-1 rounded-md border border-red-200 text-red-600 hover:text-red-700 hover:border-red-300">
+                                            <i class="fas fa-trash-alt mr-1"></i> Hapus
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         </div>

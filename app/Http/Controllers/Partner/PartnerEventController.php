@@ -55,8 +55,6 @@ class PartnerEventController extends Controller
             'end_date' => 'required|date|after_or_equal:start_date',
             'location' => 'required|string',
             'address' => 'required|string',
-            'has_certificate' => 'nullable|boolean',
-            'certificate_template' => 'nullable|in:template_a,template_b,custom',
             'sessions' => 'nullable|array',
             'sessions.*.name' => 'nullable|string|max:100',
             'sessions.*.start_at' => 'nullable|date',
@@ -88,8 +86,8 @@ class PartnerEventController extends Controller
             'status' => 'draft',
             'metadata' => json_encode([
                 'certificate' => [
-                    'has_certificate' => (bool)$request->boolean('has_certificate'),
-                    'certificate_template' => $request->certificate_template ?? 'template_a',
+                    'has_certificate' => false,
+                    'certificate_template' => 'template_a',
                 ],
             ]),
         ]);
@@ -115,8 +113,10 @@ class PartnerEventController extends Controller
                         'poster' => $event->poster,
                         'banners' => $event->banners,
                         'price' => 0,
-                        'has_certificate' => (bool)$request->boolean('has_certificate'),
-                        'certificate_template' => $request->certificate_template ?? 'template_a',
+                        'has_certificate' => false,
+                        'certificate_template' => 'template_a',
+                        // Semua event dari partner masuk antrian approval dulu
+                        'status' => 'pending',
                     ]
                 );
 
@@ -219,7 +219,7 @@ class PartnerEventController extends Controller
     public function createStep3($eventId)
     {
         $partner = Auth::guard('partner')->user();
-        $event = $partner->events()->with('tickets')->findOrFail($eventId);
+        $event = $partner->events()->with(['tickets', 'organization'])->findOrFail($eventId);
         
         if ($event->status !== 'draft') {
             return redirect()->route('diantaranexus.events.index')
@@ -243,11 +243,48 @@ class PartnerEventController extends Controller
             'terms_conditions' => 'required|string',
             'submit_for_review' => 'nullable|boolean',
             'custom_certificate' => 'nullable|file|mimes:pdf,png,jpg,jpeg',
+            'has_certificate' => 'nullable|boolean',
+            'certificate_template' => 'nullable|in:template_a,template_b,custom',
+            'cert_org_name' => 'nullable|string|max:255',
+            'cert_presented_text' => 'nullable|string|max:255',
+            'cert_body' => 'nullable|string',
+            'cert_date_label' => 'nullable|string|max:50',
+            'cert_signature_label' => 'nullable|string|max:50',
+            'certificate_logo' => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
         ]);
 
         $updateData = [
             'terms_conditions' => $request->terms_conditions,
         ];
+
+        // Update certificate metadata on PartnerEvent (normalize to array)
+        $rawMetadata = $event->metadata ?? [];
+        if (is_string($rawMetadata)) {
+            $decoded = json_decode($rawMetadata, true);
+            $metadata = is_array($decoded) ? $decoded : [];
+        } else {
+            $metadata = is_array($rawMetadata) ? $rawMetadata : [];
+        }
+
+        $certificateMeta = $metadata['certificate'] ?? [];
+        $certificateMeta['has_certificate'] = (bool)$request->boolean('has_certificate');
+        $certificateMeta['certificate_template'] = $request->certificate_template ?? 'template_a';
+        $certificateMeta['text'] = [
+            'org_name' => $request->input('cert_org_name'),
+            'presented_text' => $request->input('cert_presented_text'),
+            'body' => $request->input('cert_body'),
+            'date_label' => $request->input('cert_date_label'),
+            'signature_label' => $request->input('cert_signature_label'),
+        ];
+
+        // Handle custom certificate logo upload (stored in public storage)
+        if ($request->hasFile('certificate_logo')) {
+            $logoPath = $request->file('certificate_logo')->store('events/certificates/logos', 'public');
+            $certificateMeta['logo_path'] = $logoPath;
+        }
+
+        $metadata['certificate'] = $certificateMeta;
+        $updateData['metadata'] = $metadata;
 
         // Handle poster upload
         if ($request->hasFile('poster')) {
@@ -285,6 +322,8 @@ class PartnerEventController extends Controller
         try {
             $mirror = [
                 'poster' => $event->poster,
+                'has_certificate' => (bool)$request->boolean('has_certificate'),
+                'certificate_template' => $request->certificate_template ?? 'template_a',
             ];
             if (!empty($updateData['poster'])) {
                 $mirror['flyer_path'] = $updateData['poster'];
@@ -319,6 +358,36 @@ class PartnerEventController extends Controller
     }
 
     /**
+     * Preview certificate HTML for this event (organizer side).
+     */
+    public function previewCertificate($id)
+    {
+        $partner = Auth::guard('partner')->user();
+        $event = $partner->events()->with('organization')->findOrFail($id);
+
+        $rawMetadata = $event->metadata ?? [];
+        if (is_string($rawMetadata)) {
+            $decoded = json_decode($rawMetadata, true);
+            $metadata = is_array($decoded) ? $decoded : [];
+        } else {
+            $metadata = is_array($rawMetadata) ? $rawMetadata : [];
+        }
+
+        $certMeta = $metadata['certificate'] ?? [];
+        $hasCertificate = (bool)($certMeta['has_certificate'] ?? false);
+        $template = $certMeta['certificate_template'] ?? 'template_a';
+
+        $participantName = 'Jonathan Smith';
+
+        return view('partner.events.certificate.preview', [
+            'event' => $event,
+            'template' => $template,
+            'hasCertificate' => $hasCertificate,
+            'participantName' => $participantName,
+        ]);
+    }
+
+    /**
      * Submit event for review
      */
     public function submitForReview($id)
@@ -332,6 +401,63 @@ class PartnerEventController extends Controller
 
         $event->update(['status' => 'pending_review']);
 
+        // Sinkronkan status event mirror di tabel events ke pending
+        try {
+            \App\Models\Event::where('slug', $event->slug)->update(['status' => 'pending']);
+        } catch (\Throwable $e) {
+            \Log::warning('Sync partner event submitForReview to events table failed: '.$e->getMessage());
+        }
+
         return back()->with('success', 'Event submitted for review successfully!');
+    }
+
+    /**
+     * Edit event basic info (redirect to step1 form for drafts)
+     */
+    public function edit($id)
+    {
+        $partner = Auth::guard('partner')->user();
+        $event = $partner->events()->findOrFail($id);
+
+        // Hanya event dengan status draft yang bisa diedit dari organizer
+        if ($event->status !== 'draft') {
+            return redirect()->route('diantaranexus.events.show', $event->id)
+                ->with('error', 'Hanya event dengan status draft yang dapat diedit.');
+        }
+
+        // Arahkan ke step1 agar form yang sama bisa dipakai sebagai edit screen
+        return redirect()->route('diantaranexus.events.create.step1', $event->id);
+    }
+
+    /**
+     * Remove the specified event from storage.
+     */
+    public function destroy($id)
+    {
+        $partner = Auth::guard('partner')->user();
+        $event = $partner->events()->findOrFail($id);
+
+        // Untuk keamanan, batasi penghapusan hanya untuk draft / pending_review
+        if (in_array($event->status, ['published'])) {
+            return back()->with('error', 'Event yang sudah tayang tidak dapat dihapus dari organizer.');
+        }
+
+        DB::transaction(function () use ($event) {
+            // Hapus tiket terkait
+            $event->tickets()->delete();
+
+            // Hapus mirror di tabel events (jika ada)
+            try {
+                Event::where('slug', $event->slug)->delete();
+            } catch (\Throwable $e) {
+                \Log::warning('Failed deleting mirrored Event for partner event '.$event->id.': '.$e->getMessage());
+            }
+
+            // Hapus partner event
+            $event->delete();
+        });
+
+        return redirect()->route('diantaranexus.events.index')
+            ->with('success', 'Event berhasil dihapus.');
     }
 }

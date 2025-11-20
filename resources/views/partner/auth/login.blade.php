@@ -190,7 +190,7 @@
                                    class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary">
                             <span class="ml-2 text-sm text-gray-600">Ingat Saya</span>
                         </label>
-                        <a href="#" class="text-sm text-primary hover:text-primary-dark">Lupa Password?</a>
+                        <a href="{{ route('diantaranexus.password.request') }}" class="text-sm text-primary hover:text-primary-dark">Lupa Password?</a>
                     </div>
 
                     <!-- Submit Button -->

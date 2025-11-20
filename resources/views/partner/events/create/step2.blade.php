@@ -73,7 +73,7 @@
             <div id="ticketsContainer" class="space-y-6">
                 @if($tickets->count() > 0)
                     @foreach($tickets as $index => $ticket)
-                        <div class="ticket-item border border-gray-200 rounded-xl p-6 bg-gray-50">
+                        <div class="ticket-item border border-gray-200 rounded-xl p-6 bg-gray-50" data-ticket-index="{{ $index }}">
                             <div class="flex items-center justify-between mb-4">
                                 <h4 class="text-lg font-semibold text-gray-900">Ticket Type {{ $index + 1 }}</h4>
                                 @if($index > 0)
@@ -98,14 +98,12 @@
                                 <!-- Price -->
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Price (IDR) *</label>
-                                    <input type="number" 
+                                    <input type="text" 
                                            name="tickets[{{ $index }}][price]" 
                                            value="{{ old('tickets.'.$index.'.price', $ticket->price) }}"
-                                           min="0" 
-                                           step="1000"
                                            placeholder="0"
                                            required 
-                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-nexus focus:border-transparent transition-all">
+                                           class="price-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-nexus focus:border-transparent transition-all">
                                 </div>
 
                                 <!-- Quantity -->
@@ -153,7 +151,7 @@
                             <!-- Benefits Section -->
                             <div class="mt-6">
                                 <label class="block text-sm font-medium text-gray-700 mb-3">Ticket Benefits (Optional)</label>
-                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 benefits-grid">
                                     <label class="flex items-center">
                                         <input type="checkbox" name="tickets[{{ $index }}][benefits][]" value="Access to all sessions" class="rounded border-gray-300 text-nexus focus:ring-nexus">
                                         <span class="ml-2 text-sm text-gray-700">Access to all sessions</span>
@@ -178,13 +176,17 @@
                                         <input type="checkbox" name="tickets[{{ $index }}][benefits][]" value="Priority seating" class="rounded border-gray-300 text-nexus focus:ring-nexus">
                                         <span class="ml-2 text-sm text-gray-700">Priority seating</span>
                                     </label>
+                                    <div class="md:col-span-2 lg:col-span-3 flex flex-col sm:flex-row gap-2 items-stretch mt-2">
+                                        <input type="text" class="custom-benefit-input w-full px-3 py-2 border border-dashed border-gray-300 rounded-lg text-sm" placeholder="Tambah benefit lain (mis. Snack, Meet & Greet)">
+                                        <button type="button" class="add-custom-benefit px-4 py-2 border border-nexus text-nexus rounded-lg text-sm hover:bg-nexus hover:text-white transition-all">+ Tambah Benefit</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     @endforeach
                 @else
                     <!-- Default First Ticket -->
-                    <div class="ticket-item border border-gray-200 rounded-xl p-6 bg-gray-50">
+                    <div class="ticket-item border border-gray-200 rounded-xl p-6 bg-gray-50" data-ticket-index="0">
                         <div class="flex items-center justify-between mb-4">
                             <h4 class="text-lg font-semibold text-gray-900">Ticket Type 1</h4>
                         </div>
@@ -204,14 +206,12 @@
                             <!-- Price -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Price (IDR) *</label>
-                                <input type="number" 
+                                <input type="text" 
                                        name="tickets[0][price]" 
                                        value="{{ old('tickets.0.price', '100000') }}"
-                                       min="0" 
-                                       step="1000"
                                        placeholder="0"
                                        required 
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-nexus focus:border-transparent transition-all">
+                                       class="price-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-nexus focus:border-transparent transition-all">
                             </div>
 
                             <!-- Quantity -->
@@ -259,7 +259,7 @@
                         <!-- Benefits Section -->
                         <div class="mt-6">
                             <label class="block text-sm font-medium text-gray-700 mb-3">Ticket Benefits (Optional)</label>
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 benefits-grid">
                                 <label class="flex items-center">
                                     <input type="checkbox" name="tickets[0][benefits][]" value="Access to all sessions" class="rounded border-gray-300 text-nexus focus:ring-nexus">
                                     <span class="ml-2 text-sm text-gray-700">Access to all sessions</span>
@@ -284,6 +284,10 @@
                                     <input type="checkbox" name="tickets[0][benefits][]" value="Priority seating" class="rounded border-gray-300 text-nexus focus:ring-nexus">
                                     <span class="ml-2 text-sm text-gray-700">Priority seating</span>
                                 </label>
+                                <div class="md:col-span-2 lg:col-span-3 flex flex-col sm:flex-row gap-2 items-stretch mt-2">
+                                    <input type="text" class="custom-benefit-input w-full px-3 py-2 border border-dashed border-gray-300 rounded-lg text-sm" placeholder="Tambah benefit lain (mis. Snack, Meet & Greet)">
+                                    <button type="button" class="add-custom-benefit px-4 py-2 border border-nexus text-nexus rounded-lg text-sm hover:bg-nexus hover:text-white transition-all">+ Tambah Benefit</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -359,8 +363,8 @@ function addTicket() {
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Price (IDR) *</label>
-                    <input type="number" name="tickets[${ticketIndex}][price]" min="0" step="1000" placeholder="0" required 
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-nexus focus:border-transparent transition-all">
+                    <input type="text" name="tickets[${ticketIndex}][price]" placeholder="0" required 
+                           class="price-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-nexus focus:border-transparent transition-all">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Available Quantity *</label>
@@ -418,20 +422,48 @@ function addTicket() {
     
     container.insertAdjacentHTML('beforeend', ticketHtml);
     ticketIndex++;
+
+    // apply formatting to new price inputs
+    initPriceInputs();
 }
 
 function removeTicket(button) {
     button.closest('.ticket-item').remove();
 }
 
-// Auto-format price inputs
-document.addEventListener('input', function(e) {
-    if (e.target.type === 'number' && e.target.name.includes('[price]')) {
-        const value = parseInt(e.target.value);
-        if (value && value % 1000 !== 0) {
-            e.target.value = Math.round(value / 1000) * 1000;
+function formatRupiah(value) {
+    const numeric = value.replace(/[^0-9]/g, '');
+    if (!numeric) return '';
+
+    return numeric.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+function initPriceInputs() {
+    const priceInputs = document.querySelectorAll('.price-input');
+    priceInputs.forEach((input) => {
+        // initial format
+        if (input.dataset.formatted !== '1') {
+            if (input.value) {
+                input.value = formatRupiah(input.value);
+            }
+            input.dataset.formatted = '1';
         }
-    }
+
+        input.addEventListener('input', function () {
+            this.value = formatRupiah(this.value);
+        });
+    });
+}
+
+// on submit, strip dots so backend receives plain numbers
+document.getElementById('ticketForm').addEventListener('submit', function () {
+    const priceInputs = this.querySelectorAll('.price-input');
+    priceInputs.forEach((input) => {
+        input.value = input.value.replace(/\./g, '');
+    });
 });
+
+// init on load
+document.addEventListener('DOMContentLoaded', initPriceInputs);
 </script>
 @endsection

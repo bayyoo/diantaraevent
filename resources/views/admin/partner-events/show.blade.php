@@ -73,18 +73,28 @@
 
             <div class="bg-white p-6 rounded border">
                 <h3 class="font-semibold mb-3">Moderasi</h3>
-                <div class="flex space-x-2">
-                    <form method="POST" action="{{ route('admin.partner-events.approve', $event) }}">
+                @if($event->status === 'pending_review')
+                    <div class="flex space-x-2">
+                        <form method="POST" action="{{ route('admin.partner-events.approve', $event) }}">
+                            @csrf
+                            @method('PUT')
+                            <button type="submit" class="px-4 py-2 rounded bg-green-600 text-white">Approve</button>
+                        </form>
+                        <form method="POST" action="{{ route('admin.partner-events.reject', $event) }}">
+                            @csrf
+                            @method('PUT')
+                            <button type="submit" class="px-4 py-2 rounded bg-red-600 text-white">Reject</button>
+                        </form>
+                    </div>
+                @elseif($event->status === 'published')
+                    <form method="POST" action="{{ route('admin.partner-events.withdraw', $event) }}" onsubmit="return confirm('Tarik event ini dari publik? Peserta tidak akan bisa mendaftar lagi.');">
                         @csrf
                         @method('PUT')
-                        <button type="submit" class="px-4 py-2 rounded bg-green-600 text-white">Approve</button>
+                        <button type="submit" class="px-4 py-2 rounded bg-yellow-600 text-white w-full">Tarik Event Kembali</button>
                     </form>
-                    <form method="POST" action="{{ route('admin.partner-events.reject', $event) }}">
-                        @csrf
-                        @method('PUT')
-                        <button type="submit" class="px-4 py-2 rounded bg-red-600 text-white">Reject</button>
-                    </form>
-                </div>
+                @else
+                    <p class="text-sm text-gray-600">Tidak ada aksi moderasi yang tersedia untuk status ini.</p>
+                @endif
             </div>
         </div>
     </div>

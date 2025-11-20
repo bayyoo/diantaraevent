@@ -23,6 +23,11 @@
     <div class="page">
         <div class="border">
             <div class="certno">No: {{ $certificate_number }}</div>
+            @if(!empty($logo_path))
+                <div style="position:absolute; top:40px; left:40px;">
+                    <img src="{{ $logo_path }}" alt="Logo" style="height:50px;">
+                </div>
+            @endif
             <div class="title">CERTIFICATE OF PARTICIPATION</div>
             <div class="subtitle">This certificate is proudly presented to</div>
             <div class="name">{{ $user->full_name ?? $user->name }}</div>

@@ -125,7 +125,15 @@
     @if($posts->count() > 0)
     <div class="bg-white py-16">
         <div class="max-w-5xl mx-auto px-6">
-            @php $featured = $posts->first(); @endphp
+            @php 
+                $featured = $posts->first(); 
+                $featuredDefaultImage = match($featured->category) {
+                    'event' => 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=800&h=400&fit=crop',
+                    'tips' => 'https://images.unsplash.com/photo-1516387938699-a93567ec168e?w=800&h=400&fit=crop',
+                    'promo' => 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=400&fit=crop',
+                    default => 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=800&h=400&fit=crop',
+                };
+            @endphp
             <a href="{{ route('blog.show', $featured->slug) }}" class="block group bg-gray-50 rounded-2xl overflow-hidden border border-gray-200 hover:border-primary/60 transition-colors">
                 <div class="md:flex">
                     <div class="md:w-1/2 h-60 md:h-64 overflow-hidden">
@@ -134,7 +142,7 @@
                                  alt="{{ $featured->title }}" 
                                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
                         @else
-                            <img src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=800&h=400&fit=crop" 
+                            <img src="{{ $featuredDefaultImage }}" 
                                  alt="{{ $featured->title }}" 
                                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
                         @endif
@@ -198,13 +206,21 @@
             @if($posts->skip(1)->count() > 0)
             <div class="grid md:grid-cols-3 gap-6">
                 @foreach($posts->skip(1) as $post)
+                @php
+                    $defaultImage = match($post->category) {
+                        'event' => 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=400&h=250&fit=crop',
+                        'tips' => 'https://images.unsplash.com/photo-1516387938699-a93567ec168e?w=400&h=250&fit=crop',
+                        'promo' => 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=250&fit=crop',
+                        default => 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=400&h=250&fit=crop',
+                    };
+                @endphp
                 <a href="{{ route('blog.show', $post->slug) }}" class="blog-card block bg-white rounded-lg overflow-hidden border border-gray-200 hover:border-primary transition-colors">
                     @if($post->featured_image)
                         <img src="{{ asset('storage/' . $post->featured_image) }}" 
                              alt="{{ $post->title }}" 
                              class="w-full h-48 object-cover">
                     @else
-                        <img src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=400&h=250&fit=crop" 
+                        <img src="{{ $defaultImage }}" 
                              alt="{{ $post->title }}" 
                              class="w-full h-48 object-cover">
                     @endif

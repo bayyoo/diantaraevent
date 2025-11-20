@@ -236,6 +236,7 @@ Route::prefix('admin')->middleware(['auth', App\Http\Middleware\AdminMiddleware:
     Route::get('/partner-events/{event}', [App\Http\Controllers\Admin\PartnerEventController::class, 'show'])->name('partner-events.show');
     Route::put('/partner-events/{event}/approve', [App\Http\Controllers\Admin\PartnerEventController::class, 'approve'])->name('partner-events.approve');
     Route::put('/partner-events/{event}/reject', [App\Http\Controllers\Admin\PartnerEventController::class, 'reject'])->name('partner-events.reject');
+    Route::put('/partner-events/{event}/withdraw', [App\Http\Controllers\Admin\PartnerEventController::class, 'withdraw'])->name('partner-events.withdraw');
 });
 
 // Diantara Nexus B2B Portal
@@ -259,6 +260,16 @@ Route::prefix('diantaranexus')->name('diantaranexus.')->group(function () {
             ->name('verify-otp.submit');
         Route::post('/resend-otp', [App\Http\Controllers\Partner\Auth\PartnerAuthController::class, 'resendOtp'])
             ->name('resend-otp');
+
+        // Partner password reset routes
+        Route::get('/forgot-password', [App\Http\Controllers\Partner\Auth\PartnerPasswordResetLinkController::class, 'create'])
+            ->name('password.request');
+        Route::post('/forgot-password', [App\Http\Controllers\Partner\Auth\PartnerPasswordResetLinkController::class, 'store'])
+            ->name('password.email');
+        Route::get('/reset-password/{token}', [App\Http\Controllers\Partner\Auth\PartnerNewPasswordController::class, 'create'])
+            ->name('password.reset');
+        Route::post('/reset-password', [App\Http\Controllers\Partner\Auth\PartnerNewPasswordController::class, 'store'])
+            ->name('password.store');
         
         // Organization Setup Routes
         Route::get('/setup-organization', [App\Http\Controllers\Partner\Auth\PartnerAuthController::class, 'showOrganizationSetup'])
@@ -306,8 +317,14 @@ Route::prefix('diantaranexus')->name('diantaranexus.')->group(function () {
                 ->name('create.step3.store');
             Route::get('/{event}', [App\Http\Controllers\Partner\PartnerEventController::class, 'show'])
                 ->name('show');
+            Route::get('/{event}/certificate/preview', [App\Http\Controllers\Partner\PartnerEventController::class, 'previewCertificate'])
+                ->name('certificate.preview');
             Route::post('/{event}/submit-review', [App\Http\Controllers\Partner\PartnerEventController::class, 'submitForReview'])
                 ->name('submit-review');
+            Route::get('/{event}/edit', [App\Http\Controllers\Partner\PartnerEventController::class, 'edit'])
+                ->name('edit');
+            Route::delete('/{event}', [App\Http\Controllers\Partner\PartnerEventController::class, 'destroy'])
+                ->name('destroy');
         });
     });
 });

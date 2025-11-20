@@ -165,15 +165,15 @@
                                             <p class="text-gray-600 text-sm">{{ $review->comment }}</p>
 
                                             @auth
-                                                @if($review->user_id === auth()->id())
-                                                    <div class="mt-2 flex items-center space-x-2">
-                                                        <form action="{{ route('public.partner-events.review.destroy', [$event, $review]) }}" method="POST" onsubmit="return confirm('Delete this review?')">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit" class="text-sm text-red-600 hover:text-red-700">Delete</button>
-                                                        </form>
-                                                    </div>
-                                                @endif
+                                            @if($review->user_id === auth()->id())
+                                                <div class="mt-2 flex items-center space-x-2">
+                                                    <form action="{{ route('public.partner-events.review.redirect', [$event, $review]) }}" method="POST" onsubmit="return confirm('Delete this review?')">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="text-sm text-red-600 hover:text-red-700">Delete</button>
+                                                    </form>
+                                                </div>
+                                            @endif
                                             @endauth
                                         </div>
                                     </div>
@@ -190,7 +190,7 @@
                             <!-- Write Review Form -->
                             <div id="partnerReviewForm" class="mt-6 pt-6 border-t border-gray-200">
                                 <h4 class="font-semibold text-gray-900 mb-3">Write a Review</h4>
-                                <form method="POST" action="{{ route('public.partner-events.review.store', $event) }}" class="space-y-3">
+                                <form method="POST" action="{{ route('public.partner-events.review.redirect', [$event]) }}" class="space-y-3">
                                     @csrf
                                     <div>
                                         <label class="text-sm text-gray-700">Rating</label>

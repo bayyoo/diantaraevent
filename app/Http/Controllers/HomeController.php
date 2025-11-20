@@ -16,13 +16,16 @@ class HomeController extends Controller
         $isAuthenticated = auth()->check();
         $user = auth()->user();
 
-        // Get admin events (published/approved)
+        // Get events (published/approved) from unified events table
+        // Termasuk event yang berasal dari Nexus (source = 'partner') selama sudah published
         $adminEventsQuery = Event::with('creator')
             ->published();
         
-        // Get partner events (published)
+        // Get partner events (published + sudah ada mirror Event yang approved/published)
+        $publishedEventSlugs = Event::published()->pluck('slug');
         $partnerEventsQuery = PartnerEvent::with(['partner', 'organization', 'tickets'])
-            ->where('status', 'published');
+            ->where('status', 'published')
+            ->whereIn('slug', $publishedEventSlugs);
             
         // Time filter - default show all, but can filter by upcoming/past
         $timeFilter = $request->get('time', 'all'); // all, upcoming, past
@@ -82,37 +85,13 @@ class HomeController extends Controller
             ];
         });
         
-        // Get partner events
-        $partnerEvents = $partnerEventsQuery->get()->map(function($event) {
-            // Determine minimum ticket price (0 if no tickets)
-            $minPrice = 0;
-            if ($event->relationLoaded('tickets')) {
-                $min = $event->tickets->min('price');
-                $minPrice = $min !== null ? (int) $min : 0;
-            } else {
-                $minPrice = (int) ($event->tickets()->min('price') ?? 0);
-            }
-            return (object) [
-                'id' => $event->id,
-                'title' => $event->title,
-                'description' => $event->description,
-                'event_date' => $event->start_date->format('Y-m-d'),
-                'event_time' => $event->start_date->format('H:i:s'),
-                'location' => $event->location,
-                'capacity' => 1000, // Default capacity for partner events
-                'price' => $minPrice,
-                'flyer_path' => $event->poster,
-                'creator_name' => $event->organization->name ?? $event->partner->name ?? 'Partner',
-                'creator_type' => 'partner',
-                'slug' => $event->slug,
-                'created_at' => $event->created_at,
-                // Unified public detail page using slug for both admin & partner events
-                'link_url' => route('public.events.show', $event->slug),
-            ];
-        });
-        
-        // Combine and sort all events
-        $allEvents = $adminEvents->concat($partnerEvents);
+        // Untuk homepage "Exciting Events Just for You", hanya gunakan sumber dari tabel events
+        // (adminEvents) yang sudah published/approved. PartnerEvent akan muncul setelah dimirror
+        // dan di-approve di tabel events, jadi tidak perlu digabung langsung di sini.
+        $partnerEvents = collect();
+
+        // Combine and sort all events (saat ini hanya adminEvents/published events)
+        $allEvents = $adminEvents;
         
         // Sorting - default to show upcoming events first, then past events
         $sort = $request->get('sort', 'date_mixed');
@@ -147,7 +126,7 @@ class HomeController extends Controller
         $offset = ($currentPage - 1) * $perPage;
         $events = $allEvents->slice($offset, $perPage)->values();
         
-        // Create pagination object
+        // Create pagination object untuk daftar lengkap event (Explore All / Catalog)
         $total = $allEvents->count();
         $events = new \Illuminate\Pagination\LengthAwarePaginator(
             $events,
@@ -156,6 +135,9 @@ class HomeController extends Controller
             $currentPage,
             ['path' => $request->url(), 'query' => $request->query()]
         );
+
+        // Events khusus homepage: ambil 8 event yang PALING BARU DIBUAT (created_at terbaru) dari published events
+        $homepageEvents = $adminEvents->sortByDesc('created_at')->take(8)->values();
 
         // Get featured events for carousel (latest 3 events from both admin and partner)
         $featuredAdminEvents = Event::with('creator')
@@ -232,6 +214,6 @@ class HomeController extends Controller
                 ->toArray();
         }
 
-        return view('welcome', compact('events', 'featuredEvents', 'eventCategories', 'isAuthenticated', 'user', 'wishlistEventIds'));
+        return view('welcome', compact('events', 'featuredEvents', 'eventCategories', 'isAuthenticated', 'user', 'wishlistEventIds', 'homepageEvents'));
     }
 }

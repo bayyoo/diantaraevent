@@ -25,6 +25,9 @@
     <div class="container">
         <div class="certno">Certificate: {{ $certificate_number }}</div>
         <div class="header">
+            @if(!empty($logo_path))
+                <img src="{{ $logo_path }}" alt="Logo" style="height:50px;margin-bottom:8px;">
+            @endif
             <div class="brand">DIANTARA NEXUS</div>
             <div class="cert-title">Certificate of Completion</div>
         </div>
