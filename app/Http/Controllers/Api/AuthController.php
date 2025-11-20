@@ -4,11 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Mail\VerifyEmailOTP;
+use App\Services\ResendMailer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rules;
 use Illuminate\Http\JsonResponse;
 use Carbon\Carbon;
@@ -37,8 +36,8 @@ class AuthController extends Controller
             'otp_expires_at' => $otpExpiresAt,
         ]);
 
-        // Send OTP email
-        Mail::to($user->email)->send(new VerifyEmailOTP($user, $otpCode));
+        // Send OTP email via Resend API
+        app(ResendMailer::class)->sendOtp($user->email, $otpCode, $user->name);
 
         return response()->json([
             'success' => true,
@@ -179,8 +178,8 @@ class AuthController extends Controller
             'otp_expires_at' => $otpExpiresAt,
         ]);
 
-        // Send new OTP email
-        Mail::to($user->email)->send(new VerifyEmailOTP($user, $otpCode));
+        // Send new OTP email via Resend API
+        app(ResendMailer::class)->sendOtp($user->email, $otpCode, $user->name);
 
         return response()->json([
             'success' => true,

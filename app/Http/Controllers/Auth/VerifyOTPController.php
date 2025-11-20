@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\ResendMailer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -125,8 +126,8 @@ class VerifyOTPController extends Controller
             'otp_expires_at' => $otpExpiresAt,
         ]);
 
-        // Send new OTP email
-        \Mail::to($user->email)->send(new \App\Mail\VerifyEmailOTP($user, $otpCode));
+        // Send new OTP email via Resend API
+        app(ResendMailer::class)->sendOtp($user->email, $otpCode, $user->name);
 
         if ($request->expectsJson()) {
             return response()->json([
