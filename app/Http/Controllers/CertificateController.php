@@ -257,7 +257,27 @@ class CertificateController extends Controller
      */
     public function userCertificates()
     {
-        $certificates = EventCertificate::where('user_id', auth()->id())
+        $user = auth()->user();
+
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        $certificateService = new CertificateService();
+
+        $attendances = EventAttendance::where('user_id', $user->id)
+            ->where('is_attended', true)
+            ->with('event')
+            ->get();
+
+        foreach ($attendances as $attendance) {
+            $event = $attendance->event;
+            if ($event && $certificateService->shouldGenerateCertificates($event)) {
+                $certificateService->generateCertificate($event, $user);
+            }
+        }
+
+        $certificates = EventCertificate::where('user_id', $user->id)
             ->with(['event'])
             ->orderBy('generated_at', 'desc')
             ->get();
