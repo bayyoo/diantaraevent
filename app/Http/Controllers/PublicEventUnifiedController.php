@@ -16,6 +16,10 @@ class PublicEventUnifiedController extends Controller
             if ($partner->status !== 'published') {
                 return redirect()->route('catalog.index')->with('error', 'Event tidak tersedia.');
             }
+            $mirroredEvent = Event::where('slug', $slug)->first();
+            if ($mirroredEvent && in_array($mirroredEvent->status, ['approved', 'published'])) {
+                return redirect()->route('events.show', $mirroredEvent);
+            }
             // Load only safe relations (avoid reviews until schema is unified)
             $partner->load(['partner', 'organization', 'tickets']);
 
