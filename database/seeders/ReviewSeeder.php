@@ -36,7 +36,8 @@ class ReviewSeeder extends Seeder
                 try {
                     Review::create([
                         'user_id' => $user->id,
-                        'event_id' => $event->id,
+                        'reviewable_id' => $event->id,
+                        'reviewable_type' => Event::class,
                         'rating' => rand(3, 5),
                         'comment' => $comments[array_rand($comments)],
                     ]);
