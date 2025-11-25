@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Partner\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Partner;
+use App\Services\ResendMailer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
@@ -23,14 +25,31 @@ class PartnerPasswordResetLinkController extends Controller
             'email' => 'required|email',
         ]);
 
-        $status = Password::broker('partners')->sendResetLink(
-            $request->only('email')
-        );
+        try {
+            $partner = Partner::where('email', $request->email)->first();
 
-        if ($status === Password::RESET_LINK_SENT) {
-            return back()->with('status', __($status));
+            if (!$partner) {
+                return back()->with('status', 'Link reset password telah dikirim ke email Anda jika akun tersebut terdaftar.');
+            }
+
+            $token = Password::broker('partners')->createToken($partner);
+
+            $resetUrl = url(route('diantaranexus.password.reset', [
+                'token' => $token,
+                'email' => $partner->email,
+            ], false));
+
+            $sent = app(ResendMailer::class)->sendPasswordReset($partner->email, $resetUrl, $partner->name);
+
+            if ($sent) {
+                return back()->with('status', 'Link reset password telah dikirim ke email Anda. Silakan cek inbox atau folder spam.');
+            }
+
+            return back()->with('error', 'Gagal mengirim link reset password. Silakan coba lagi atau hubungi administrator.');
+
+        } catch (\Exception $e) {
+            \Log::error('Partner password reset error: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat mengirim email reset password. Silakan coba lagi atau hubungi administrator.');
         }
-
-        return back()->withErrors(['email' => __($status)]);
     }
 }

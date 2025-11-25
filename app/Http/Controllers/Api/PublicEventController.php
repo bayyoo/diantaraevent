@@ -12,6 +12,7 @@ class PublicEventController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = Event::with('creator')
+            ->published()
             ->where('event_date', '>=', now()->toDateString());
 
         // Search functionality
@@ -35,13 +36,14 @@ class PublicEventController extends Controller
     public function show($slug): JsonResponse
     {
         $event = Event::with('creator')
+            ->published()
             ->where('slug', $slug)
             ->first();
 
         if (!$event) {
             return response()->json([
                 'success' => false,
-                'message' => 'Event not found'
+                'message' => 'Event not found or not available'
             ], 404);
         }
 
