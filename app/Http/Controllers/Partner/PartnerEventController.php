@@ -395,13 +395,15 @@ class PartnerEventController extends Controller
         $partner = Auth::guard('partner')->user();
         $event = $partner->events()->findOrFail($id);
 
-        if ($event->status !== 'draft') {
-            return back()->with('error', 'Only draft events can be submitted for review.');
+        // Hanya event dengan status draft atau published yang boleh diajukan untuk review
+        if (!in_array($event->status, ['draft', 'published'])) {
+            return back()->with('error', 'Only draft or published events can be submitted for review.');
         }
 
+        // Tandai sebagai pending_review sehingga perubahan harus di-approve admin
         $event->update(['status' => 'pending_review']);
 
-        // Sinkronkan status event mirror di tabel events ke pending
+        // Sembunyikan dari katalog publik sementara (status mirror di tabel events menjadi pending)
         try {
             \App\Models\Event::where('slug', $event->slug)->update(['status' => 'pending']);
         } catch (\Throwable $e) {
@@ -419,10 +421,10 @@ class PartnerEventController extends Controller
         $partner = Auth::guard('partner')->user();
         $event = $partner->events()->findOrFail($id);
 
-        // Hanya event dengan status draft yang bisa diedit dari organizer
-        if ($event->status !== 'draft') {
+        // Hanya event dengan status draft atau pending_review yang bisa diedit dari organizer
+        if (!in_array($event->status, ['draft', 'pending_review'])) {
             return redirect()->route('diantaranexus.events.show', $event->id)
-                ->with('error', 'Hanya event dengan status draft yang dapat diedit.');
+                ->with('error', 'Hanya event dengan status draft atau dalam review yang dapat diedit.');
         }
 
         // Arahkan ke step1 agar form yang sama bisa dipakai sebagai edit screen
