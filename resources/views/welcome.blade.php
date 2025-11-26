@@ -656,7 +656,7 @@
                             <div class="relative overflow-hidden rounded-xl">
                                 @if($event->flyer_path)
                                     <img 
-                                        src="{{ asset('storage/' . $event->flyer_path) }}" 
+                                        src="{{ asset($event->flyer_path) }}" 
                                         alt="{{ $event->title }}" 
                                         loading="lazy" decoding="async"
                                         class="w-full h-32 object-cover"
