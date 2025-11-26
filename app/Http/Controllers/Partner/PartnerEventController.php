@@ -335,22 +335,22 @@ class PartnerEventController extends Controller
         $metadata['certificate'] = $certificateMeta;
         $updateData['metadata'] = $metadata;
 
-        // Handle poster upload (simpan langsung ke public/images/posters)
+        // Handle poster upload (simpan langsung ke public/images/event)
         if ($request->hasFile('poster')) {
             $posterFile = $request->file('poster');
             $posterName = 'poster_'.time().'_'.Str::random(8).'.'.$posterFile->getClientOriginalExtension();
-            $posterFile->move(public_path('images/posters'), $posterName);
+            $posterFile->move(public_path('images/event'), $posterName);
             // Simpan path relatif dari public untuk digunakan dengan asset()
-            $updateData['poster'] = 'images/posters/'.$posterName;
+            $updateData['poster'] = 'images/event/'.$posterName;
         }
 
-        // Handle banner uploads (simpan langsung ke public/images/banners)
+        // Handle banner uploads (simpan langsung ke public/images/event)
         if ($request->hasFile('banners')) {
             $bannerPaths = [];
             foreach ($request->file('banners') as $banner) {
                 $bannerName = 'banner_'.time().'_'.Str::random(8).'.'.$banner->getClientOriginalExtension();
-                $banner->move(public_path('images/banners'), $bannerName);
-                $bannerPaths[] = 'images/banners/'.$bannerName;
+                $banner->move(public_path('images/event'), $bannerName);
+                $bannerPaths[] = 'images/event/'.$bannerName;
             }
             $updateData['banners'] = json_encode($bannerPaths);
 
@@ -509,7 +509,10 @@ class PartnerEventController extends Controller
             abort(404, 'Event publik tidak ditemukan untuk absensi.');
         }
 
-        $totalRegistrations = EventAttendance::where('event_id', $publicEvent->id)->count();
+        // Total pendaftar ambil dari peserta event publik
+        $totalRegistrations = $publicEvent->participants()->count();
+
+        // Total sudah hadir tetap dari tabel EventAttendance
         $totalAttended = EventAttendance::where('event_id', $publicEvent->id)
             ->where('is_attended', true)
             ->count();
@@ -544,6 +547,23 @@ class PartnerEventController extends Controller
                 ->where('attendance_token', $request->attendance_token)
                 ->with('user')
                 ->first();
+
+            // Jika belum ada record EventAttendance, coba sync on-the-fly dari Participants
+            if (!$attendance) {
+                $participant = $publicEvent->participants()
+                    ->where('token', $request->attendance_token)
+                    ->orWhere('attendance_token', $request->attendance_token)
+                    ->first();
+
+                if ($participant) {
+                    $attendance = EventAttendance::create([
+                        'event_id' => $publicEvent->id,
+                        'user_id' => $participant->user_id,
+                        'attendance_token' => $participant->attendance_token ?? $participant->token,
+                        'is_attended' => false,
+                    ])->fresh(['user']);
+                }
+            }
 
             if (!$attendance) {
                 return back()->with('error', 'Token absensi tidak valid untuk event ini.');
