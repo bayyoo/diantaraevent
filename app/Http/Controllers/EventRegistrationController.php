@@ -132,19 +132,9 @@ class EventRegistrationController extends Controller
             \Log::error('E-Ticket generation failed: ' . $e->getMessage());
         }
 
-        // Send token via email
+        // Send token via email (use Laravel Mail so it follows the same config as OTP emails)
         try {
-            $html = view('emails.event-registration-token', [
-                'participant' => $participant,
-                'event' => $event,
-            ])->render();
-
-            app(\App\Services\BrevoEmailService::class)->sendEmail(
-                $user->email,
-                $user->name,
-                'Token Absensi - ' . $event->title,
-                $html
-            );
+            Mail::to($user->email)->send(new EventRegistrationToken($participant, $event));
         } catch (\Exception $e) {
             \Log::error('Email sending failed: ' . $e->getMessage());
         }
