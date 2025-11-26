@@ -76,8 +76,8 @@ class PartnerEventController extends Controller
     public function reject(PartnerEvent $event)
     {
         $event->update([
-            'status' => 'rejected',
-            'rejected_at' => now()
+            // Use a valid enum value for status; mark rejected events as cancelled
+            'status' => 'cancelled',
         ]);
 
         return back()->with('success', 'Partner event has been rejected.');
