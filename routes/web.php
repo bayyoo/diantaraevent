@@ -331,6 +331,10 @@ Route::prefix('diantaranexus')->name('diantaranexus.')->group(function () {
                 ->name('create.step3');
             Route::post('/create/{event}/step3', [App\Http\Controllers\Partner\PartnerEventController::class, 'storeStep3'])
                 ->name('create.step3.store');
+            Route::get('/{event}/attendance', [App\Http\Controllers\Partner\PartnerEventController::class, 'attendance'])
+                ->name('attendance');
+            Route::post('/{event}/attendance', [App\Http\Controllers\Partner\PartnerEventController::class, 'attendanceStore'])
+                ->name('attendance.store');
             Route::get('/{event}', [App\Http\Controllers\Partner\PartnerEventController::class, 'show'])
                 ->name('show');
             Route::get('/{event}/certificate/preview', [App\Http\Controllers\Partner\PartnerEventController::class, 'previewCertificate'])

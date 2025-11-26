@@ -160,6 +160,10 @@
                                     <i class="fas fa-external-link-alt mr-1"></i> Preview
                                 </a>
                                 @endif
+                                <a href="{{ route('diantaranexus.events.attendance', $event->id) }}" 
+                                   class="inline-flex items-center px-2.5 py-1 rounded-md border border-emerald-200 text-emerald-700 hover:text-emerald-800 hover:border-emerald-300">
+                                    <i class="fas fa-user-check mr-1"></i> Absensi
+                                </a>
                                 <a href="{{ route('diantaranexus.events.show', $event->id) }}" 
                                    class="inline-flex items-center px-2.5 py-1 rounded-md border border-gray-200 text-gray-600 hover:text-blue-700 hover:border-blue-200">
                                     <i class="fas fa-edit mr-1"></i> Edit

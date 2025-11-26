@@ -460,6 +460,81 @@ class PartnerEventController extends Controller
     }
 
     /**
+     * Show attendance page for this event (EO side in Diantara Nexus)
+     */
+    public function attendance($id)
+    {
+        $partner = Auth::guard('partner')->user();
+        $event = $partner->events()->with('organization')->findOrFail($id);
+
+        // Find mirrored public event by slug
+        $publicEvent = Event::where('slug', $event->slug)->first();
+
+        if (!$publicEvent) {
+            abort(404, 'Event publik tidak ditemukan untuk absensi.');
+        }
+
+        $totalRegistrations = EventAttendance::where('event_id', $publicEvent->id)->count();
+        $totalAttended = EventAttendance::where('event_id', $publicEvent->id)
+            ->where('is_attended', true)
+            ->count();
+
+        return view('partner.events.attendance', [
+            'event' => $publicEvent,
+            'totalRegistrations' => $totalRegistrations,
+            'totalAttended' => $totalAttended,
+        ]);
+    }
+
+    /**
+     * Handle attendance token submission from EO (Diantara Nexus)
+     */
+    public function attendanceStore(Request $request, $id)
+    {
+        $request->validate([
+            'attendance_token' => 'required|string|size:10',
+        ]);
+
+        $partner = Auth::guard('partner')->user();
+        $partnerEvent = $partner->events()->with('organization')->findOrFail($id);
+
+        // Resolve mirrored public event
+        $publicEvent = Event::where('slug', $partnerEvent->slug)->first();
+        if (!$publicEvent) {
+            return back()->with('error', 'Event publik untuk absensi tidak ditemukan.');
+        }
+
+        try {
+            $attendance = EventAttendance::where('event_id', $publicEvent->id)
+                ->where('attendance_token', $request->attendance_token)
+                ->with('user')
+                ->first();
+
+            if (!$attendance) {
+                return back()->with('error', 'Token absensi tidak valid untuk event ini.');
+            }
+
+            if ($attendance->is_attended) {
+                return back()->with('error', 'Peserta ini sudah ditandai hadir sebelumnya.');
+            }
+
+            $verifiedBy = $partnerEvent->organization->name
+                ?? ($partner->name ?? 'Organizer');
+
+            $attendance->markAttended($verifiedBy);
+
+            return back()->with('success', 'Absensi berhasil untuk peserta: ' . ($attendance->user->full_name ?? $attendance->user->name ?? $attendance->user->email));
+        } catch (\Exception $e) {
+            \Log::error('Partner attendanceStore failed: ' . $e->getMessage(), [
+                'partner_id' => $partner->id,
+                'event_id' => $partnerEvent->id,
+            ]);
+
+            return back()->with('error', 'Terjadi kesalahan saat memproses absensi.');
+        }
+    }
+
+    /**
      * Submit event for review
      */
     public function submitForReview($id)
