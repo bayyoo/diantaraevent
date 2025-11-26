@@ -42,11 +42,26 @@
             <div class="mb-6 border border-gray-200 rounded-md p-3">
                 <div class="flex items-center justify-between">
                     <!-- Tabs Left -->
+                    @php
+                        $status = $statusFilter ?? request('status', 'semua');
+                    @endphp
                     <div class="flex items-center space-x-2">
-                        <button class="px-4 py-2 rounded-md text-sm font-medium border border-blue-200 bg-white text-blue-700">SEMUA EVENT</button>
-                        <button class="px-4 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-blue-700 hover:border-blue-200 border border-transparent">DRAF</button>
-                        <button class="px-4 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-blue-700 hover:border-blue-200 border border-transparent">TAYANG</button>
-                        <button class="px-4 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-blue-700 hover:border-blue-200 border border-transparent">BERAKHIR</button>
+                        <a href="{{ route('diantaranexus.events.index', ['status' => 'semua']) }}"
+                           class="px-4 py-2 rounded-md text-sm font-medium border {{ $status === 'semua' ? 'border-blue-200 bg-white text-blue-700' : 'border-transparent text-gray-600 hover:text-blue-700 hover:border-blue-200' }}">
+                            SEMUA EVENT
+                        </a>
+                        <a href="{{ route('diantaranexus.events.index', ['status' => 'draft']) }}"
+                           class="px-4 py-2 rounded-md text-sm font-medium border {{ $status === 'draft' ? 'border-blue-200 bg-white text-blue-700' : 'border-transparent text-gray-600 hover:text-blue-700 hover:border-blue-200' }}">
+                            DRAF
+                        </a>
+                        <a href="{{ route('diantaranexus.events.index', ['status' => 'tayang']) }}"
+                           class="px-4 py-2 rounded-md text-sm font-medium border {{ $status === 'tayang' ? 'border-blue-200 bg-white text-blue-700' : 'border-transparent text-gray-600 hover:text-blue-700 hover:border-blue-200' }}">
+                            TAYANG
+                        </a>
+                        <a href="{{ route('diantaranexus.events.index', ['status' => 'berakhir']) }}"
+                           class="px-4 py-2 rounded-md text-sm font-medium border {{ $status === 'berakhir' ? 'border-blue-200 bg-white text-blue-700' : 'border-transparent text-gray-600 hover:text-blue-700 hover:border-blue-200' }}">
+                            BERAKHIR
+                        </a>
                     </div>
                     <!-- Actions Right -->
                     <div class="flex items-center space-x-3">
@@ -70,23 +85,26 @@
                     @foreach($events as $event)
                     <div class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
                         <!-- Event Image/Poster -->
-                        <div class="aspect-w-16 aspect-h-9 bg-gradient-to-r from-red-500 to-orange-500 relative">
+                        <div class="aspect-w-16 aspect-h-9 bg-gray-100 relative">
                             @php
-                                $bannerThumb = null;
-                                if (empty($event->poster) && !empty($event->banners)) {
+                                // Normalisasi poster & banners ke array path yang bisa dipakai
+                                $primaryImage = null;
+
+                                if (!empty($event->poster)) {
+                                    $primaryImage = $event->poster;
+                                } elseif (!empty($event->banners)) {
                                     $bannersArray = is_array($event->banners) ? $event->banners : json_decode($event->banners, true);
                                     if (is_array($bannersArray) && count($bannersArray) > 0) {
-                                        $bannerThumb = $bannersArray[0];
+                                        $primaryImage = $bannersArray[0];
                                     }
                                 }
                             @endphp
-                            @if($event->poster)
-                                <img src="{{ Storage::url($event->poster) }}" alt="{{ $event->title }}" class="w-full h-full object-cover">
-                            @elseif($bannerThumb)
-                                <img src="{{ Storage::url($bannerThumb) }}" alt="{{ $event->title }}" class="w-full h-full object-cover">
+
+                            @if($primaryImage)
+                                <img src="{{ asset($primaryImage) }}" alt="{{ $event->title }}" class="w-full h-full object-cover">
                             @else
-                                <div class="flex items-center justify-center text-white">
-                                    <i class="fas fa-calendar text-4xl opacity-50"></i>
+                                <div class="w-full h-full bg-gradient-to-r from-red-500 to-orange-500 flex items-center justify-center text-white">
+                                    <i class="fas fa-calendar text-4xl opacity-70"></i>
                                 </div>
                             @endif
                             

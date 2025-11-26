@@ -22,16 +22,30 @@ class PartnerEventController extends Controller
     /**
      * Display a listing of partner events.
      */
-    public function index()
+    public function index(Request $request)
     {
         $partner = Auth::guard('partner')->user();
-        
-        $events = $partner->events()
-            ->with(['tickets'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
 
-        return view('partner.events.index', compact('events'));
+        $statusFilter = $request->query('status', 'semua');
+
+        $query = $partner->events()
+            ->with(['tickets'])
+            ->orderBy('created_at', 'desc');
+
+        if ($statusFilter === 'draft') {
+            $query->where('status', 'draft');
+        } elseif ($statusFilter === 'tayang') {
+            $query->where('status', 'published');
+        } elseif ($statusFilter === 'berakhir') {
+            $query->where('end_date', '<', now());
+        }
+
+        $events = $query->paginate(10);
+
+        return view('partner.events.index', [
+            'events' => $events,
+            'statusFilter' => $statusFilter,
+        ]);
     }
 
     /**
@@ -221,9 +235,10 @@ class PartnerEventController extends Controller
         $partner = Auth::guard('partner')->user();
         $event = $partner->events()->with(['tickets', 'organization'])->findOrFail($eventId);
         
-        if ($event->status !== 'draft') {
+        // Hanya event dengan status draft atau pending_review yang bisa diedit media-nya langsung
+        if (!in_array($event->status, ['draft', 'pending_review'])) {
             return redirect()->route('diantaranexus.events.index')
-                ->with('error', 'This event cannot be edited.');
+                ->with('error', 'Hanya event dengan status draft atau dalam review yang dapat diedit.');
         }
 
         return view('partner.events.create.step3', compact('event'));
@@ -236,6 +251,9 @@ class PartnerEventController extends Controller
     {
         $partner = Auth::guard('partner')->user();
         $event = $partner->events()->findOrFail($eventId);
+
+        // Simpan status lama untuk logika approval setelah update
+        $previousStatus = $event->status;
 
         $request->validate([
             'poster' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
@@ -286,19 +304,30 @@ class PartnerEventController extends Controller
         $metadata['certificate'] = $certificateMeta;
         $updateData['metadata'] = $metadata;
 
-        // Handle poster upload
+        // Handle poster upload (simpan langsung ke public/images/posters)
         if ($request->hasFile('poster')) {
-            $posterPath = $request->file('poster')->store('events/posters', 'public');
-            $updateData['poster'] = $posterPath;
+            $posterFile = $request->file('poster');
+            $posterName = 'poster_'.time().'_'.Str::random(8).'.'.$posterFile->getClientOriginalExtension();
+            $posterFile->move(public_path('images/posters'), $posterName);
+            // Simpan path relatif dari public untuk digunakan dengan asset()
+            $updateData['poster'] = 'images/posters/'.$posterName;
         }
 
-        // Handle banner uploads
+        // Handle banner uploads (simpan langsung ke public/images/banners)
         if ($request->hasFile('banners')) {
             $bannerPaths = [];
             foreach ($request->file('banners') as $banner) {
-                $bannerPaths[] = $banner->store('events/banners', 'public');
+                $bannerName = 'banner_'.time().'_'.Str::random(8).'.'.$banner->getClientOriginalExtension();
+                $banner->move(public_path('images/banners'), $bannerName);
+                $bannerPaths[] = 'images/banners/'.$bannerName;
             }
             $updateData['banners'] = json_encode($bannerPaths);
+
+            // Jika belum ada poster (di event lama maupun input baru),
+            // gunakan banner pertama sebagai poster utama supaya selalu ada gambar di kartu event
+            if ((empty($event->poster) && empty($updateData['poster'] ?? null)) && count($bannerPaths) > 0) {
+                $updateData['poster'] = $bannerPaths[0];
+            }
         }
 
         // Handle custom certificate upload (for custom template)
@@ -313,6 +342,13 @@ class PartnerEventController extends Controller
 
         // Update status if submitting for review
         if ($request->submit_for_review) {
+            $updateData['status'] = 'pending_review';
+        }
+
+        // Jika event sebelumnya sudah published dan terjadi perubahan melalui step3
+        // tetapi organizer tidak mencentang submit_for_review secara eksplisit,
+        // tetap paksa status menjadi pending_review agar perubahan menunggu approve admin.
+        if ($previousStatus === 'published' && empty($updateData['status'])) {
             $updateData['status'] = 'pending_review';
         }
 

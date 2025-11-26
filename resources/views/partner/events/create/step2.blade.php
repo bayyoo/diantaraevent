@@ -425,6 +425,9 @@ function addTicket() {
 
     // apply formatting to new price inputs
     initPriceInputs();
+
+    // rebind custom benefit handlers for newly added ticket block
+    initCustomBenefits();
 }
 
 function removeTicket(button) {
@@ -455,6 +458,71 @@ function initPriceInputs() {
     });
 }
 
+function initCustomBenefits() {
+    const ticketItems = document.querySelectorAll('.ticket-item');
+
+    ticketItems.forEach((item) => {
+        const addBtn = item.querySelector('.add-custom-benefit');
+        const input = item.querySelector('.custom-benefit-input');
+        const grid = item.querySelector('.benefits-grid');
+
+        if (!addBtn || !input || !grid) return;
+
+        // hindari binding ganda
+        if (addBtn.dataset.bound === '1') return;
+        addBtn.dataset.bound = '1';
+
+        addBtn.addEventListener('click', function () {
+            const value = (input.value || '').trim();
+            if (!value) return;
+
+            // tentukan index tiket dari attribute data-ticket-index jika ada
+            let idx = item.getAttribute('data-ticket-index');
+            if (idx === null || idx === undefined || idx === '') {
+                // fallback: coba parse dari name input ticket name
+                const nameInput = item.querySelector('input[name^="tickets["][name$="[name]"]');
+                if (nameInput) {
+                    const match = nameInput.name.match(/tickets\[(\d+)\]\[name\]/);
+                    if (match) {
+                        idx = match[1];
+                    }
+                }
+            }
+
+            // jika tetap null, jangan lanjut agar tidak kirim name salah
+            if (idx === null || idx === undefined || idx === '') return;
+
+            const label = document.createElement('label');
+            label.className = 'flex items-center';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.name = `tickets[${idx}][benefits][]`;
+            checkbox.value = value;
+            checkbox.checked = true;
+            checkbox.className = 'rounded border-gray-300 text-nexus focus:ring-nexus';
+
+            const span = document.createElement('span');
+            span.className = 'ml-2 text-sm text-gray-700';
+            span.textContent = value;
+
+            label.appendChild(checkbox);
+            label.appendChild(span);
+
+            // sisipkan sebelum row input custom agar tetap rapi
+            const customRow = item.querySelector('.custom-benefit-input')?.parentElement;
+            if (customRow && customRow.parentElement === grid) {
+                grid.insertBefore(label, customRow);
+            } else {
+                grid.appendChild(label);
+            }
+
+            // reset input
+            input.value = '';
+        });
+    });
+}
+
 // on submit, strip dots so backend receives plain numbers
 document.getElementById('ticketForm').addEventListener('submit', function () {
     const priceInputs = this.querySelectorAll('.price-input');
@@ -464,6 +532,9 @@ document.getElementById('ticketForm').addEventListener('submit', function () {
 });
 
 // init on load
-document.addEventListener('DOMContentLoaded', initPriceInputs);
+document.addEventListener('DOMContentLoaded', function () {
+    initPriceInputs();
+    initCustomBenefits();
+});
 </script>
 @endsection

@@ -287,6 +287,28 @@
             background-color: #ffffff !important;
             overflow-x: hidden !important;
         }
+        /*
+         * Prevent double vertical scrollbars by hiding scrollbars on
+         * internal containers that use overflow-y:auto while leaving
+         * the main page (body) scrollable.
+         */
+        .overflow-y-auto {
+            -ms-overflow-style: none; /* IE and Edge */
+            scrollbar-width: none; /* Firefox */
+        }
+        .overflow-y-auto::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+        /* Hide scrollbars for any inner scrollable containers so only
+           the main page scrollbar (body/html) remains visible. This
+           targets all elements except html and body on this page. */
+        *:not(html):not(body) {
+            -ms-overflow-style: none; /* IE and Edge */
+            scrollbar-width: none; /* Firefox */
+        }
+        *:not(html):not(body)::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
     </style>
 </head>
 <body class="bg-gray-900 flex flex-col overflow-x-hidden m-0 p-0">

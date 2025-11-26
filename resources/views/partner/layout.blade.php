@@ -177,12 +177,6 @@
                             <i class="fas fa-search absolute left-3 top-3.5 text-gray-400"></i>
                         </div>
                         
-                        <!-- Notifications -->
-                        <button class="relative p-2 text-gray-400 hover:text-gray-600 transition-colors">
-                            <i class="fas fa-bell text-xl"></i>
-                            <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">3</span>
-                        </button>
-                        
                         <!-- Quick Actions -->
                         <div class="flex items-center space-x-2">
                             <button class="nexus-gradient text-white px-4 py-2 rounded-lg font-medium hover:opacity-90 transition-all">

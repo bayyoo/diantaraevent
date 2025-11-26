@@ -87,7 +87,7 @@
                 <div class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-nexus transition-colors">
                     <div id="posterPreview" class="mb-4">
                         @if($event->poster)
-                            <img src="{{ Storage::url($event->poster) }}" alt="Current poster" class="mx-auto max-h-48 rounded-lg">
+                            <img src="{{ asset($event->poster) }}" alt="Current poster" class="mx-auto max-h-48 rounded-lg">
                             <p class="text-sm text-gray-600 mt-2">Current poster</p>
                         @else
                             <i class="fas fa-image text-4xl text-gray-300 mb-4"></i>
@@ -323,7 +323,7 @@
                 <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center">
                     <div id="customCertPreview" class="mb-4">
                         @if($customPath)
-                            <img src="{{ Storage::url($customPath) }}" alt="Custom certificate" class="mx-auto max-h-48 rounded-lg">
+                            <img src="{{ asset($customPath) }}" alt="Custom certificate" class="mx-auto max-h-48 rounded-lg">
                             <p class="text-sm text-gray-600 mt-2">Current custom template</p>
                         @else
                             <i class="fas fa-file-image text-4xl text-gray-300 mb-3"></i>
@@ -347,7 +347,7 @@
                         @if($event->banners && count($event->banners) > 0)
                             <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                                 @foreach($event->banners as $banner)
-                                    <img src="{{ Storage::url($banner) }}" alt="Banner" class="rounded-lg max-h-32 object-cover">
+                                    <img src="{{ asset($banner) }}" alt="Banner" class="rounded-lg max-h-32 object-cover">
                                 @endforeach
                             </div>
                             <p class="text-sm text-gray-600 mt-2">Current banners</p>

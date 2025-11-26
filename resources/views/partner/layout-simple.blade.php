@@ -100,12 +100,6 @@
             
             <!-- User Menu -->
             <div class="flex items-center space-x-4">
-                <!-- Notifications -->
-                <button class="relative p-2 text-gray-600 hover:text-gray-900">
-                    <i class="fas fa-bell"></i>
-                    <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">3</span>
-                </button>
-                
                 <!-- User Profile -->
                 <div class="flex items-center space-x-3">
                     <div class="w-8 h-8 bg-nexus rounded-full flex items-center justify-center">

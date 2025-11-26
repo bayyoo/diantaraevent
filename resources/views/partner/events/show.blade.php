@@ -48,14 +48,14 @@
                         <div>
                             <div class="text-sm text-gray-600 mb-2">Poster</div>
                             <div class="w-full max-h-80 bg-gray-50 rounded-lg border flex items-center justify-center overflow-hidden">
-                                <img src="{{ Storage::url($event->poster) }}" alt="Poster" class="w-full h-full object-contain">
+                                <img src="{{ asset('images/'.$event->poster) }}" alt="Poster" class="w-full h-full object-contain">
                             </div>
                         </div>
                     @endif
                     @if($event->banners)
                         @foreach(json_decode($event->banners, true) as $bn)
                             <div class="w-full max-h-80 bg-gray-50 rounded-lg border flex items-center justify-center overflow-hidden">
-                                <img src="{{ Storage::url($bn) }}" alt="Banner" class="w-full h-full object-contain">
+                                <img src="{{ asset('images/'.$bn) }}" alt="Banner" class="w-full h-full object-contain">
                             </div>
                         @endforeach
                     @endif
@@ -94,6 +94,12 @@
                 <h3 class="text-lg font-semibold text-gray-900 mb-2">Aksi</h3>
                 <div class="space-y-2">
                     <a href="{{ route('diantaranexus.events.index') }}" class="block text-center px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">Kembali ke Daftar</a>
+
+                    <a href="{{ route('diantaranexus.events.create.step3', $event->id) }}"
+                       class="block text-center px-4 py-2 border border-blue-300 text-blue-700 rounded-md hover:bg-blue-50 text-sm">
+                        Edit Poster & Banner
+                    </a>
+
                     <form method="POST" action="{{ route('diantaranexus.events.submit-review', $event->id) }}">
                         @csrf
                         <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">Ajukan Review</button>
