@@ -95,15 +95,11 @@
             <p><strong>Lokasi:</strong> {{ $event->location }}</p>
         </div>
 
-        @php
-            $attendanceToken = $participant->attendance_token ?? $participant->token;
-        @endphp
-
         <p>Berikut adalah <strong>Token Absensi</strong> Anda:</p>
 
         <div class="token-box">
             <p style="color: #FFFFFF; margin: 0 0 10px 0; font-size: 14px; opacity: 0.9;">Token Absensi Anda</p>
-            <div class="token">{{ $attendanceToken }}</div>
+            <div class="token">{{ $participant->token }}</div>
             <p style="margin-top: 10px; color: #FFFFFF; font-size: 12px; opacity: 0.85;">Simpan token ini dengan baik!</p>
         </div>
 
@@ -112,7 +108,7 @@
             <p style="margin: 0 0 8px 0; font-weight: 600;">Token untuk Absensi / Check-in</p>
             <div style="display: inline-block; padding: 10px 16px; background: #ffffff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); font-size: 13px; color: #4b5563;">
                 Gunakan token berikut saat check-in:<br>
-                <strong style="font-family: 'Courier New', monospace; letter-spacing: 3px; font-size: 18px;">{{ $attendanceToken }}</strong>
+                <strong style="font-family: 'Courier New', monospace; letter-spacing: 3px; font-size: 18px;">{{ $participant->token }}</strong>
             </div>
             <p style="margin-top: 8px; font-size: 12px; color: #4b5563;">Masukkan token ini pada form absensi di halaman event.</p>
         </div>

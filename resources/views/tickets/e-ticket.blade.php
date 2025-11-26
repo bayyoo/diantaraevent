@@ -239,7 +239,7 @@
 </head>
 <body>
     @php
-        $displayToken = strtoupper($participant->attendance_token ?? $participant->token);
+        $displayToken = strtoupper($participant->token);
     @endphp
 
     <div class="ticket-container">
