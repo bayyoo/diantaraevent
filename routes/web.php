@@ -317,6 +317,10 @@ Route::prefix('diantaranexus')->name('diantaranexus.')->group(function () {
                 ->name('index');
             Route::get('/create', [App\Http\Controllers\Partner\PartnerEventController::class, 'create'])
                 ->name('create');
+            // Graceful handler if someone accesses step1 URL with GET
+            Route::get('/create/step1', function () {
+                return redirect()->route('diantaranexus.events.create');
+            })->name('create.step1');
             Route::post('/create/step1', [App\Http\Controllers\Partner\PartnerEventController::class, 'storeStep1'])
                 ->name('create.step1.store');
             Route::get('/create/{event}/step2', [App\Http\Controllers\Partner\PartnerEventController::class, 'createStep2'])
