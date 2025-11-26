@@ -31,7 +31,32 @@
                     <li><strong>Mulai:</strong> {{ \Carbon\Carbon::parse($event->start_date)->format('d M Y H:i') }}</li>
                     <li><strong>Selesai:</strong> {{ \Carbon\Carbon::parse($event->end_date)->format('d M Y H:i') }}</li>
                     <li><strong>Lokasi:</strong> {{ $event->location }}</li>
+                    @if(!empty($event->location_details['address']))
+                        <li><strong>Alamat Lengkap:</strong> {{ $event->location_details['address'] }}</li>
+                    @endif
+                    @if(!empty($event->location_details['city']) || !empty($event->location_details['province']))
+                        <li>
+                            <strong>Kota / Provinsi:</strong>
+                            {{ $event->location_details['city'] ?? '-' }}
+                            @if(!empty($event->location_details['province']))
+                                , {{ $event->location_details['province'] }}
+                            @endif
+                        </li>
+                    @endif
+                    @if(!empty($event->location_details['maps_url']))
+                        <li>
+                            <strong>Maps:</strong>
+                            <a href="{{ $event->location_details['maps_url'] }}" target="_blank" class="text-blue-600 hover:underline">Lihat di Google Maps</a>
+                        </li>
+                    @endif
                 </ul>
+
+                @if($event->terms_conditions)
+                    <div class="mt-4">
+                        <h4 class="text-sm font-semibold mb-1">Syarat & Ketentuan</h4>
+                        <div class="text-sm text-gray-700 whitespace-pre-line">{{ $event->terms_conditions }}</div>
+                    </div>
+                @endif
             </div>
 
             @if($event->poster || $event->banners)
@@ -55,14 +80,51 @@
             <div class="bg-white p-6 rounded border">
                 <h3 class="font-semibold mb-3">Tiket</h3>
                 @if($event->tickets->count())
-                    <div class="space-y-2">
+                    <div class="space-y-3">
                         @foreach($event->tickets as $t)
-                            <div class="border rounded p-3 flex items-center justify-between">
-                                <div>
-                                    <div class="font-medium">{{ $t->name }}</div>
-                                    <div class="text-xs text-gray-600">Qty: {{ $t->quantity }} • Rp {{ number_format($t->price,0,',','.') }}</div>
+                            <div class="border rounded p-3">
+                                <div class="flex items-start justify-between">
+                                    <div>
+                                        <div class="font-medium">{{ $t->name }}</div>
+                                        <div class="text-xs text-gray-600 mt-0.5">
+                                            Harga: Rp {{ number_format($t->price,0,',','.') }}
+                                        </div>
+                                        <div class="text-xs text-gray-600 mt-0.5">
+                                            Kuota: {{ $t->quantity }} tiket 
+                                            @if(method_exists($t, 'getRemainingQuantityAttribute'))
+                                                (Sisa {{ $t->remaining_quantity }})
+                                            @endif
+                                        </div>
+                                        <div class="text-xs text-gray-600 mt-0.5">
+                                            Min/Maks Pembelian per Transaksi: {{ $t->min_purchase }} - {{ $t->max_purchase }} tiket
+                                        </div>
+                                        @if($t->description)
+                                            <div class="text-xs text-gray-600 mt-1 whitespace-pre-line">{{ $t->description }}</div>
+                                        @endif
+                                        @if(is_array($t->benefits) && count($t->benefits))
+                                            <div class="text-xs text-gray-700 mt-1">
+                                                <span class="font-semibold">Benefit:</span>
+                                                <ul class="list-disc list-inside mt-0.5">
+                                                    @foreach($t->benefits as $benefit)
+                                                        <li>{{ $benefit }}</li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                        @endif
+                                    </div>
+                                    <div class="text-right text-xs">
+                                        <div class="text-gray-500">
+                                            {{ \Carbon\Carbon::parse($t->sale_start)->format('d M Y H:i') }}
+                                            -
+                                            {{ \Carbon\Carbon::parse($t->sale_end)->format('d M Y H:i') }}
+                                        </div>
+                                        <div class="mt-1">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold {{ $t->is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700' }}">
+                                                {{ $t->is_active ? 'AKTIF' : 'NONAKTIF' }}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($t->sale_start)->format('d M Y H:i') }} - {{ \Carbon\Carbon::parse($t->sale_end)->format('d M Y H:i') }}</div>
                             </div>
                         @endforeach
                     </div>
