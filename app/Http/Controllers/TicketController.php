@@ -15,9 +15,9 @@ class TicketController extends Controller
     {
         // Load relationships
         $participant->load(['user', 'event']);
-        
-        // Check if user owns this participant record
-        if (auth()->check() && $participant->user_id !== auth()->id()) {
+
+        // Check ownership hanya jika user_id terset
+        if (auth()->check() && $participant->user_id && $participant->user_id !== auth()->id()) {
             abort(403, 'Unauthorized access to this ticket.');
         }
         

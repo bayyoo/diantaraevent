@@ -80,6 +80,7 @@ class PaymentController extends Controller
             $registrationToken = Str::upper(Str::random(10));
             $attendanceTokenPlaceholder = Str::upper(Str::random(10));
             $participant = Participant::create([
+                'user_id' => auth()->id(),
                 'event_id' => $event->id,
                 'name' => $request->participant_name,
                 'email' => $request->participant_email,
@@ -224,7 +225,17 @@ class PaymentController extends Controller
     {
         $orderId = $request->order_id;
         $participant = Participant::where('order_id', $orderId)->first();
-        
+
+        if ($participant) {
+            // Pastikan relasi event ter-load
+            $participant->loadMissing('event');
+
+            // Fallback: jika payment sudah paid tapi attendance_token belum digenerate, generate sekarang
+            if ($participant->payment_status === 'paid' && empty($participant->attendance_token)) {
+                $this->generateAttendanceToken($participant);
+            }
+        }
+
         return view('payment.finish', compact('participant'));
     }
 
