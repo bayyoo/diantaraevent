@@ -22,24 +22,13 @@ class CertificateService
             return null;
         }
 
-        // Check full attendance across sessions (if sessions exist)
-        $totalSessions = $event->sessions()->count();
-        if ($totalSessions > 0) {
-            $attendedSessions = \App\Models\EventAttendanceSession::where('event_id', $event->id)
-                ->where('user_id', $user->id)
-                ->count();
-            if ($attendedSessions < $totalSessions) {
-                return null; // not full attendance
-            }
-        } else {
-            // Fallback to original single attendance logic
-            $attendance = EventAttendance::where('event_id', $event->id)
-                ->where('user_id', $user->id)
-                ->where('is_attended', true)
-                ->first();
-            if (!$attendance) {
-                return null;
-            }
+        // Check attendance: cukup pastikan user sudah tercatat hadir di EventAttendance
+        $attendance = EventAttendance::where('event_id', $event->id)
+            ->where('user_id', $user->id)
+            ->where('is_attended', true)
+            ->first();
+        if (!$attendance) {
+            return null;
         }
 
         // Ensure event ended
@@ -153,7 +142,8 @@ class CertificateService
      */
     public function shouldGenerateCertificates(Event $event): bool
     {
-        return $event->has_certificate && $event->hasEnded();
+        // Sertifikat boleh digenerate kapan saja selama event mengaktifkan fitur sertifikat
+        return $event->has_certificate;
     }
 
     /**
