@@ -431,7 +431,11 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                                             </svg>
                                             <div>
-                                                <span class="text-green-800 font-medium">You're registered for this event</span>
+                                                @if(isset($hasAttended) && $hasAttended)
+                                                    <span class="text-green-800 font-medium">Kamu sudah melakukan absensi untuk event ini</span>
+                                                @else
+                                                    <span class="text-green-800 font-medium">You're registered for this event</span>
+                                                @endif
                                                 @if($event->allow_multiple_registration)
                                                     <p class="text-sm text-green-600 mt-1">
                                                         Registered: {{ $userRegistrations }} time(s)

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Event;
 use App\Models\PartnerEvent;
 use App\Models\PartnerTicket;
+use App\Models\EventAttendance;
+use App\Models\EventCertificate;
 use Illuminate\Http\Request;
 
 class EventController extends Controller
@@ -53,10 +55,26 @@ class EventController extends Controller
         
         // Check if current user is already registered
         $isRegistered = false;
+        $hasAttended = false;
+        $userCertificate = null;
         if (auth()->check()) {
+            $userId = auth()->id();
+
             $isRegistered = $event->participants()
-                ->where('user_id', auth()->id())
+                ->where('user_id', $userId)
                 ->exists();
+
+            // Cek apakah user sudah tercatat hadir di sistem absensi baru
+            $attendance = EventAttendance::where('event_id', $event->id)
+                ->where('user_id', $userId)
+                ->where('is_attended', true)
+                ->first();
+            $hasAttended = (bool) $attendance;
+
+            // Ambil sertifikat jika sudah pernah dibuat
+            $userCertificate = EventCertificate::where('event_id', $event->id)
+                ->where('user_id', $userId)
+                ->first();
         }
         
         // Load reviews with user relationship
@@ -77,7 +95,7 @@ class EventController extends Controller
             ];
         }
         
-        return view('events.show', compact('event', 'isRegistered', 'reviews', 'averageRating', 'totalReviews', 'ratingDistribution'));
+        return view('events.show', compact('event', 'isRegistered', 'reviews', 'averageRating', 'totalReviews', 'ratingDistribution', 'hasAttended', 'userCertificate'));
     }
 
     /**
