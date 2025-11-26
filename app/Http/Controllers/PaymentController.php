@@ -6,11 +6,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use App\Models\Event;
 use App\Models\Participant;
 use App\Mail\EventRegistrationToken;
+use App\Services\BrevoEmailService;
 
 class PaymentController extends Controller
 {
@@ -203,11 +203,23 @@ class PaymentController extends Controller
         // Pastikan relasi event ter-load untuk kebutuhan email
         $participant->loadMissing('event');
 
-        // Kirim email berisi token pendaftaran, QR, dan informasi e-ticket
+        // Kirim email berisi token pendaftaran, QR, dan informasi e-ticket via Brevo HTTP API
         try {
-            Mail::to($participant->email)->send(new EventRegistrationToken($participant, $participant->event));
+            $html = view('emails.event-registration-token', [
+                'participant' => $participant,
+                'event' => $participant->event,
+            ])->render();
+
+            /** @var BrevoEmailService $brevo */
+            $brevo = app(BrevoEmailService::class);
+            $brevo->sendEmail(
+                $participant->email,
+                $participant->name ?? $participant->email,
+                'Token Absensi - ' . ($participant->event->title ?? 'Event'),
+                $html
+            );
         } catch (\Exception $e) {
-            Log::error('Failed sending registration token email: ' . $e->getMessage(), [
+            Log::error('Failed sending registration token email via Brevo: ' . $e->getMessage(), [
                 'participant_id' => $participant->id,
             ]);
         }
