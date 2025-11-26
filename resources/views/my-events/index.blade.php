@@ -170,16 +170,16 @@
                                     <div class="w-48 h-48 flex-shrink-0">
                                         @if($participant->event->flyer_path)
                                             <img 
-                                                src="{{ Storage::url($participant->event->flyer_path) }}" 
+                                                src="{{ asset($participant->event->flyer_path) }}" 
                                                 alt="{{ $participant->event->title }}" 
                                                 class="w-full h-full object-cover"
                                             >
                                         @else
-                                            <div class="w-full h-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center">
-                                                <svg class="w-16 h-16 text-white opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                                </svg>
-                                            </div>
+                                            <img 
+                                                src="{{ asset('images/diantara-nexus-logo.png') }}" 
+                                                alt="{{ $participant->event->title }}" 
+                                                class="w-full h-full object-cover bg-gray-100"
+                                            >
                                         @endif
                                     </div>
 
@@ -257,6 +257,14 @@
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                                 </svg>
                                                 Lihat Detail
+                                            </a>
+
+                                            <a href="{{ route('attendance.show', $participant->event) }}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors">
+                                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c1.657 0 3-1.343 3-3S13.657 5 12 5 9 6.343 9 8s1.343 3 3 3z"></path>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20v-2a4 4 0 00-4-4H9a4 4 0 00-4 4v2"></path>
+                                                </svg>
+                                                Absensi / Input Token
                                             </a>
 
                                             @php $certificate = $certificatesByEvent[$participant->event_id] ?? null; @endphp
