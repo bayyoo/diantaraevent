@@ -171,17 +171,18 @@ class CertificateController extends Controller
                 abort(403, 'Unauthorized access to certificate');
             }
 
-            // Check if certificate file exists
-            if (!Storage::disk('public')->exists($certificate->certificate_file_path)) {
+            // Check if certificate file exists in public directory
+            $filePath = public_path($certificate->certificate_file_path);
+            if (!file_exists($filePath)) {
                 return redirect()->back()->with('error', 'Certificate file not found.');
             }
 
             // Increment download count
             $certificate->incrementDownload();
 
-            // Return file download
-            return Storage::disk('public')->download(
-                $certificate->certificate_file_path,
+            // Return file download from public directory
+            return response()->download(
+                $filePath,
                 'Certificate_' . $certificate->certificate_number . '.pdf'
             );
 

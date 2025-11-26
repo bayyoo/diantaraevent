@@ -103,9 +103,7 @@
                             @if($primaryImage)
                                 <img src="{{ asset($primaryImage) }}" alt="{{ $event->title }}" class="w-full h-full object-cover">
                             @else
-                                <div class="w-full h-full bg-gradient-to-r from-red-500 to-orange-500 flex items-center justify-center text-white">
-                                    <i class="fas fa-calendar text-4xl opacity-70"></i>
-                                </div>
+                                <img src="{{ asset('images/diantara-nexus-logo.png') }}" alt="Diantara Nexus" class="w-full h-full object-cover bg-gray-100">
                             @endif
                             
                             <!-- Status Badge -->

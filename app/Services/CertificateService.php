@@ -82,7 +82,7 @@ class CertificateService
         $certificateMeta = $event->metadata['certificate'] ?? [];
         $logoPath = $certificateMeta['logo_path'] ?? null;
         $logoFullPath = $logoPath
-            ? public_path('storage/' . $logoPath)
+            ? public_path($logoPath)
             : public_path('images/diantara-nexus-logo.png');
         $data = [
             'event' => $event,
@@ -100,10 +100,14 @@ class CertificateService
 
         $pdf = Pdf::loadView($view, $data);
         $pdf->setPaper('A4', 'landscape');
-        
+
         $fileName = 'certificates/' . $certificateNumber . '.pdf';
-        Storage::disk('public')->put($fileName, $pdf->output());
-        
+        $fullPath = public_path($fileName);
+        if (!is_dir(dirname($fullPath))) {
+            mkdir(dirname($fullPath), 0755, true);
+        }
+        file_put_contents($fullPath, $pdf->output());
+
         return $fileName;
     }
 
@@ -133,10 +137,14 @@ class CertificateService
         // Reuse template A layout that displays background if provided
         $pdf = Pdf::loadView('certificates.templates.template_a', $data);
         $pdf->setPaper('A4', 'landscape');
-        
+
         $fileName = 'certificates/' . $certificateNumber . '.pdf';
-        Storage::disk('public')->put($fileName, $pdf->output());
-        
+        $fullPath = public_path($fileName);
+        if (!is_dir(dirname($fullPath))) {
+            mkdir(dirname($fullPath), 0755, true);
+        }
+        file_put_contents($fullPath, $pdf->output());
+
         return $fileName;
     }
 

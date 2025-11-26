@@ -333,9 +333,13 @@ class PartnerEventController extends Controller
             }
         }
 
-        // Handle custom certificate upload (for custom template)
+        // Handle custom certificate upload (for custom template) - save directly under public/certificates/templates
         if ($request->hasFile('custom_certificate')) {
-            $certPath = $request->file('custom_certificate')->store('certificates/templates', 'public');
+            $certFile = $request->file('custom_certificate');
+            $certName = 'custom_cert_'.time().'_'.Str::random(8).'.'.$certFile->getClientOriginalExtension();
+            $certFile->move(public_path('certificates/templates'), $certName);
+            $certPath = 'certificates/templates/'.$certName;
+
             try {
                 Event::where('slug', $event->slug)->update(['custom_certificate_path' => $certPath]);
             } catch (\Throwable $e) {
