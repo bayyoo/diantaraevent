@@ -230,8 +230,8 @@ class PaymentController extends Controller
             // Pastikan relasi event ter-load
             $participant->loadMissing('event');
 
-            // Fallback: jika payment sudah paid tapi attendance_token belum digenerate, generate sekarang
-            if ($participant->payment_status === 'paid' && empty($participant->attendance_token)) {
+            // Fallback kuat: jika attendance_token belum ada sama sekali, generate sekarang
+            if (empty($participant->attendance_token)) {
                 $this->generateAttendanceToken($participant);
             }
         }
