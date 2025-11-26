@@ -69,26 +69,35 @@ class PartnerOrganizationController extends Controller
         ];
         $update['contact_info'] = $contact;
 
-        // Handle logo upload
+        // Handle logo upload (store under public/images/organizations/logos)
         if ($request->hasFile('logo')) {
-            $path = $request->file('logo')->store('organizations/logos', 'public');
-            $update['logo'] = $path;
+            $logoFile = $request->file('logo');
+            $logoName = 'org_logo_'.time().'.'.$logoFile->getClientOriginalExtension();
+            $logoFile->move(public_path('images/organizations/logos'), $logoName);
+            $update['logo'] = 'images/organizations/logos/'.$logoName;
         }
 
-        // Handle stamp upload
+        // Handle stamp upload (store under public/images/organizations/stamps)
         if ($request->hasFile('stamp_image')) {
-            $update['stamp_image'] = $request->file('stamp_image')->store('organizations/stamps', 'public');
+            $stampFile = $request->file('stamp_image');
+            $stampName = 'org_stamp_'.time().'.'.$stampFile->getClientOriginalExtension();
+            $stampFile->move(public_path('images/organizations/stamps'), $stampName);
+            $update['stamp_image'] = 'images/organizations/stamps/'.$stampName;
         }
 
-        // Helper to save base64 signature
+        // Helper to save base64 signature under public/images/organizations/signatures
         $saveBase64 = function (string $data, string $slot) {
             if (!preg_match('/^data:image\/(png|jpeg);base64,/', $data)) return null;
             $data = substr($data, strpos($data, ',') + 1);
             $binary = base64_decode($data);
             if ($binary === false) return null;
             $ext = 'png';
-            $filename = "organizations/signatures/{$slot}_".time().".".$ext;
-            \Storage::disk('public')->put($filename, $binary);
+            $filename = "images/organizations/signatures/{$slot}_".time().".".$ext;
+            $fullPath = public_path($filename);
+            if (!is_dir(dirname($fullPath))) {
+                mkdir(dirname($fullPath), 0755, true);
+            }
+            file_put_contents($fullPath, $binary);
             return $filename;
         };
 
@@ -96,7 +105,10 @@ class PartnerOrganizationController extends Controller
         $update['signature1_name'] = $validated['signature1_name'] ?? $organization->signature1_name;
         $update['signature1_title'] = $validated['signature1_title'] ?? $organization->signature1_title;
         if (($validated['signature1_type'] ?? null) === 'upload' && $request->hasFile('signature1_image')) {
-            $update['signature1_image'] = $request->file('signature1_image')->store('organizations/signatures', 'public');
+            $sigFile = $request->file('signature1_image');
+            $sigName = 'sig1_'.time().'.'.$sigFile->getClientOriginalExtension();
+            $sigFile->move(public_path('images/organizations/signatures'), $sigName);
+            $update['signature1_image'] = 'images/organizations/signatures/'.$sigName;
             $update['signature1_type'] = 'upload';
         } elseif (($validated['signature1_type'] ?? null) === 'draw' && !empty($validated['signature1_draw'])) {
             if ($saved = $saveBase64($validated['signature1_draw'], 'sig1')) {
@@ -109,7 +121,10 @@ class PartnerOrganizationController extends Controller
         $update['signature2_name'] = $validated['signature2_name'] ?? $organization->signature2_name;
         $update['signature2_title'] = $validated['signature2_title'] ?? $organization->signature2_title;
         if (($validated['signature2_type'] ?? null) === 'upload' && $request->hasFile('signature2_image')) {
-            $update['signature2_image'] = $request->file('signature2_image')->store('organizations/signatures', 'public');
+            $sigFile = $request->file('signature2_image');
+            $sigName = 'sig2_'.time().'.'.$sigFile->getClientOriginalExtension();
+            $sigFile->move(public_path('images/organizations/signatures'), $sigName);
+            $update['signature2_image'] = 'images/organizations/signatures/'.$sigName;
             $update['signature2_type'] = 'upload';
         } elseif (($validated['signature2_type'] ?? null) === 'draw' && !empty($validated['signature2_draw'])) {
             if ($saved = $saveBase64($validated['signature2_draw'], 'sig2')) {

@@ -296,10 +296,12 @@ class PartnerEventController extends Controller
             'signature_label' => $request->input('cert_signature_label'),
         ];
 
-        // Handle custom certificate logo upload (stored in public storage)
+        // Handle custom certificate logo upload (store under public/images/events/certificates/logos)
         if ($request->hasFile('certificate_logo')) {
-            $logoPath = $request->file('certificate_logo')->store('events/certificates/logos', 'public');
-            $certificateMeta['logo_path'] = $logoPath;
+            $logoFile = $request->file('certificate_logo');
+            $logoName = 'cert_logo_'.time().'_'.Str::random(8).'.'.$logoFile->getClientOriginalExtension();
+            $logoFile->move(public_path('images/events/certificates/logos'), $logoName);
+            $certificateMeta['logo_path'] = 'images/events/certificates/logos/'.$logoName;
         }
 
         $metadata['certificate'] = $certificateMeta;

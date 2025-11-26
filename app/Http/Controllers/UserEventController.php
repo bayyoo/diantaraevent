@@ -48,10 +48,13 @@ class UserEventController extends Controller
             'event_date.after_or_equal' => 'Event harus dibuat minimal H-3 sebelum tanggal pelaksanaan.',
         ]);
 
-        // Handle flyer upload
+        // Handle flyer upload (store under public/images/flyers)
         $flyerPath = null;
         if ($request->hasFile('flyer')) {
-            $flyerPath = $request->file('flyer')->store('flyers', 'public');
+            $flyerFile = $request->file('flyer');
+            $flyerName = 'flyer_'.time().'_'.Str::random(8).'.'.$flyerFile->getClientOriginalExtension();
+            $flyerFile->move(public_path('images/flyers'), $flyerName);
+            $flyerPath = 'images/flyers/'.$flyerName;
         }
 
         // Create event with pending status
@@ -138,9 +141,16 @@ class UserEventController extends Controller
         if ($request->hasFile('flyer')) {
             // Delete old flyer
             if ($event->flyer_path) {
-                Storage::disk('public')->delete($event->flyer_path);
+                $oldPath = public_path($event->flyer_path);
+                if (file_exists($oldPath)) {
+                    @unlink($oldPath);
+                }
             }
-            $validated['flyer_path'] = $request->file('flyer')->store('flyers', 'public');
+
+            $flyerFile = $request->file('flyer');
+            $flyerName = 'flyer_'.time().'_'.Str::random(8).'.'.$flyerFile->getClientOriginalExtension();
+            $flyerFile->move(public_path('images/flyers'), $flyerName);
+            $validated['flyer_path'] = 'images/flyers/'.$flyerName;
         }
 
         // Update event and reset to pending if it was rejected
@@ -180,7 +190,10 @@ class UserEventController extends Controller
 
         // Delete flyer
         if ($event->flyer_path) {
-            Storage::disk('public')->delete($event->flyer_path);
+            $oldPath = public_path($event->flyer_path);
+            if (file_exists($oldPath)) {
+                @unlink($oldPath);
+            }
         }
 
         $event->delete();
