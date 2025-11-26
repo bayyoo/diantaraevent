@@ -7,6 +7,7 @@ use App\Models\PartnerEvent;
 use App\Models\PartnerTicket;
 use App\Models\Event;
 use App\Models\EventSession;
+use App\Models\EventAttendance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
