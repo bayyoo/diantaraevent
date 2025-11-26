@@ -8,6 +8,8 @@ use App\Models\PartnerTicket;
 use App\Models\Event;
 use App\Models\EventSession;
 use App\Models\EventAttendance;
+use App\Models\Participant;
+use App\Services\CertificateService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -576,7 +578,29 @@ class PartnerEventController extends Controller
             $verifiedBy = $partnerEvent->organization->name
                 ?? ($partner->name ?? 'Organizer');
 
+            // Tandai hadir di EventAttendance (Nexus)
             $attendance->markAttended($verifiedBy);
+
+            // Sinkronkan status Participant di sistem admin lama
+            if ($attendance->user_id && $publicEvent) {
+                $participant = Participant::where('event_id', $publicEvent->id)
+                    ->where('user_id', $attendance->user_id)
+                    ->first();
+
+                if ($participant) {
+                    $participant->update(['status' => 'attended']);
+
+                    // Jika event punya sertifikat dan sudah memenuhi syarat, generate sertifikat via CertificateService
+                    $eventForCert = $publicEvent;
+                    $userForCert = $attendance->user;
+                    if ($eventForCert && $userForCert) {
+                        $certificateService = new CertificateService();
+                        if ($certificateService->shouldGenerateCertificates($eventForCert)) {
+                            $certificateService->generateCertificate($eventForCert, $userForCert);
+                        }
+                    }
+                }
+            }
 
             return back()->with('success', 'Absensi berhasil untuk peserta: ' . ($attendance->user->full_name ?? $attendance->user->name ?? $attendance->user->email));
         } catch (\Exception $e) {
