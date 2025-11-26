@@ -103,6 +103,14 @@
             <p style="margin-top: 10px; color: #FFFFFF; font-size: 12px; opacity: 0.85;">Simpan token ini dengan baik!</p>
         </div>
 
+        <div style="text-align:center; margin: 20px 0;">
+            <p style="margin: 0 0 8px 0; font-weight: 600;">QR Code Kehadiran</p>
+            <div style="display: inline-block; padding: 10px; background: #ffffff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+                {!! QrCode::size(130)->generate($participant->token) !!}
+            </div>
+            <p style="margin-top: 8px; font-size: 12px; color: #4b5563;">Tunjukkan QR ini atau masukkan token saat check-in.</p>
+        </div>
+
         <div class="warning">
             <h4>⚠️ Penting untuk Diperhatikan:</h4>
             <ul>
@@ -114,6 +122,7 @@
         </div>
 
         <p>Terima kasih telah mendaftar. Sampai jumpa di event!</p>
+        <p style="margin-top: 10px; font-size: 13px; color: #4b5563;">E-ticket Anda juga terlampir pada email ini dan dapat diunduh atau ditampilkan dari halaman setelah pembayaran berhasil.</p>
     </div>
 
     <div class="footer">

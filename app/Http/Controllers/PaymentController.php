@@ -6,9 +6,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use App\Models\Event;
 use App\Models\Participant;
+use App\Mail\EventRegistrationToken;
 
 class PaymentController extends Controller
 {
@@ -194,12 +196,21 @@ class PaymentController extends Controller
     private function generateAttendanceToken($participant)
     {
         $token = strtoupper(substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, 10));
-        
+
         $participant->update(['attendance_token' => $token]);
-        
-        // TODO: Send email with attendance token
-        // Mail::to($participant->email)->send(new AttendanceTokenMail($participant));
-        
+
+        // Pastikan relasi event ter-load untuk kebutuhan email
+        $participant->loadMissing('event');
+
+        // Kirim email berisi token pendaftaran, QR, dan informasi e-ticket
+        try {
+            Mail::to($participant->email)->send(new EventRegistrationToken($participant, $participant->event));
+        } catch (\Exception $e) {
+            Log::error('Failed sending registration token email: ' . $e->getMessage(), [
+                'participant_id' => $participant->id,
+            ]);
+        }
+
         Log::info('Attendance token generated', [
             'participant_id' => $participant->id,
             'token' => $token
