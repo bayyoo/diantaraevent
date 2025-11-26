@@ -44,7 +44,7 @@
                             <!-- Event Image -->
                             <div class="md:w-64 h-48 md:h-auto">
                                 @if($event->flyer_path)
-                                    <img src="{{ asset('storage/' . $event->flyer_path) }}" 
+                                    <img src="{{ asset($event->flyer_path) }}" 
                                          alt="{{ $event->title }}"
                                          class="w-full h-full object-cover">
                                 @else

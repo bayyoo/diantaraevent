@@ -151,7 +151,7 @@
                     <!-- Event Image -->
                     <div class="mb-4">
                         @if($event->flyer_path)
-                            <img src="{{ Storage::url($event->flyer_path) }}" alt="{{ $event->title }}" class="w-full h-32 object-cover rounded-lg">
+                            <img src="{{ asset($event->flyer_path) }}" alt="{{ $event->title }}" class="w-full h-32 object-cover rounded-lg">
                         @else
                             @php
                                 $eventImages = [

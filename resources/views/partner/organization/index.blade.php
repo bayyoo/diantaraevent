@@ -35,7 +35,7 @@
                     <div>
                         <label class="block text-sm text-gray-700 mb-1">Logo Organisasi</label>
                         <div class="flex items-center space-x-4">
-                            <img id="logo-preview" class="h-16 w-16 rounded-full object-cover bg-gray-100" src="{{ $organization->logo ? asset('storage/'.$organization->logo) : 'https://via.placeholder.com/64' }}" alt="Logo">
+                            <img id="logo-preview" class="h-16 w-16 rounded-full object-cover bg-gray-100" src="{{ $organization->logo ? asset($organization->logo) : 'https://via.placeholder.com/64' }}" alt="Logo">
                             <input id="logo-input" type="file" name="logo" accept="image/*" class="text-sm">
                         </div>
                     </div>
@@ -123,7 +123,7 @@
                                 <div class="space-y-3">
                                     <div id="sig1-upload" class="{{ old('signature1_type', $organization->signature1_type)==='draw' ? 'hidden' : '' }}">
                                         <div class="flex items-center space-x-4">
-                                            <img id="sig1-preview" class="h-12 object-contain" src="{{ $organization->signature1_image ? asset('storage/'.$organization->signature1_image) : 'https://via.placeholder.com/120x48?text=Preview' }}" alt="Sig1">
+                                            <img id="sig1-preview" class="h-12 object-contain" src="{{ $organization->signature1_image ? asset($organization->signature1_image) : 'https://via.placeholder.com/120x48?text=Preview' }}" alt="Sig1">
                                             <input type="file" name="signature1_image" accept="image/*" class="text-sm" />
                                         </div>
                                     </div>
@@ -158,7 +158,7 @@
                                 <div class="space-y-3">
                                     <div id="sig2-upload" class="{{ old('signature2_type', $organization->signature2_type)==='draw' ? 'hidden' : '' }}">
                                         <div class="flex items-center space-x-4">
-                                            <img id="sig2-preview" class="h-12 object-contain" src="{{ $organization->signature2_image ? asset('storage/'.$organization->signature2_image) : 'https://via.placeholder.com/120x48?text=Preview' }}" alt="Sig2">
+                                            <img id="sig2-preview" class="h-12 object-contain" src="{{ $organization->signature2_image ? asset($organization->signature2_image) : 'https://via.placeholder.com/120x48?text=Preview' }}" alt="Sig2">
                                             <input type="file" name="signature2_image" accept="image/*" class="text-sm" />
                                         </div>
                                     </div>
@@ -179,7 +179,7 @@
                     <div class="pt-2">
                         <h4 class="font-semibold text-gray-900 mb-2">Cap/Stamp (opsional)</h4>
                         <div class="flex items-center space-x-4">
-                            <img class="h-12 object-contain" src="{{ $organization->stamp_image ? asset('storage/'.$organization->stamp_image) : 'https://via.placeholder.com/120x48?text=Preview' }}" alt="Stamp">
+                            <img class="h-12 object-contain" src="{{ $organization->stamp_image ? asset($organization->stamp_image) : 'https://via.placeholder.com/120x48?text=Preview' }}" alt="Stamp">
                             <input type="file" name="stamp_image" accept="image/*" class="text-sm" />
                         </div>
                     </div>

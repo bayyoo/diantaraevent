@@ -24,7 +24,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: url('{{ asset('storage/' . $custom_template_path) }}');
+            background-image: url('{{ asset($custom_template_path) }}');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;

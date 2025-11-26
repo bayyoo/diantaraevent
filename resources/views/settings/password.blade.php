@@ -7,9 +7,9 @@
     <title>Atur Kata Sandi - {{ config('app.name', 'Diantara') }}</title>
     
     <!-- Favicon -->
-    <link rel="icon" href="{{ asset('storage/images/logos/diantara.png') }}" sizes="any">
-    <link rel="icon" href="{{ asset('storage/images/logos/diantara.png') }}" type="image/png">
-    <link rel="apple-touch-icon" href="{{ asset('storage/images/logos/diantara.png') }}">
+    <link rel="icon" href="{{ asset('images/diantara_logo.png') }}" sizes="any">
+    <link rel="icon" href="{{ asset('images/diantara_logo.png') }}" type="image/png">
+    <link rel="apple-touch-icon" href="{{ asset('images/diantara_logo.png') }}">
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>

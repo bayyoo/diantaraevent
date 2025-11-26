@@ -813,7 +813,7 @@
                                     <div class="relative overflow-hidden rounded-xl">
                                         @if($event->flyer_path)
                                             <img 
-                                                src="{{ asset('storage/' . $event->flyer_path) }}" 
+                                                src="{{ asset($event->flyer_path) }}" 
                                                 alt="{{ $event->title }}" 
                                                 loading="lazy" decoding="async"
                                                 class="w-full h-40 object-cover"
@@ -997,7 +997,7 @@
                                     <div class="relative overflow-hidden">
                                         @if($event->flyer_path)
                                             <img 
-                                                src="{{ asset('storage/' . $event->flyer_path) }}" 
+                                                src="{{ asset($event->flyer_path) }}" 
                                                 alt="{{ $event->title }}" 
                                                 class="w-full h-40 object-cover transition-transform duration-500 group-hover:scale-105"
                                                 onerror="this.src='{{ $imageUrl }}'"

@@ -169,7 +169,7 @@
                                 <div class="relative h-48">
                                     @if($wishlist->event->flyer_path)
                                         <img 
-                                            src="{{ Storage::url($wishlist->event->flyer_path) }}" 
+                                            src="{{ asset($wishlist->event->flyer_path) }}" 
                                             alt="{{ $wishlist->event->title }}" 
                                             class="w-full h-full object-cover"
                                         >

@@ -22,22 +22,25 @@
                     </div>
                     <div class="flex flex-col items-end space-y-2">
                         @php $status = strtoupper($event->status); @endphp
-                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-semibold {{ $event->status === 'pending_review' ? 'bg-yellow-100 text-yellow-800' : ($event->status === 'published' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800') }}">{{ $status }}</span>
-
-                        @php
-                            $primaryMedia = null;
-                            if ($event->poster) {
-                                $primaryMedia = $event->poster;
-                            } elseif (is_array($event->banners) && count($event->banners)) {
-                                $primaryMedia = $event->banners[0];
-                            }
-                        @endphp
-
-                        @if($primaryMedia)
-                            <div class="mt-1 w-40 h-24 border rounded overflow-hidden bg-gray-50">
-                                <img src="{{ Storage::url($primaryMedia) }}" alt="Poster" class="w-full h-full object-cover">
-                            </div>
-                        @endif
+                        <div class="flex items-center mb-4">
+                            <span class="font-semibold mr-2">Status:</span>
+                            <span class="badge badge-{{ $event->status === 'published' ? 'success' : ($event->status === 'pending_review' ? 'warning' : 'secondary') }}">
+                                {{ strtoupper(str_replace('_', ' ', $event->status)) }}
+                            </span>
+                            @php
+                                $primaryMedia = null;
+                                if ($event->poster) {
+                                    $primaryMedia = $event->poster;
+                                } elseif (is_array($event->banners) && count($event->banners)) {
+                                    $primaryMedia = $event->banners[0];
+                                }
+                            @endphp
+                            @if($primaryMedia)
+                                <div class="mt-1 w-40 h-24 border rounded overflow-hidden bg-gray-50 ml-3">
+                                    <img src="{{ asset($primaryMedia) }}" alt="Poster" class="w-full h-full object-cover">
+                                </div>
+                            @endif
+                        </div>
                     </div>
                 </div>
                 <div class="mt-4 text-gray-700 whitespace-pre-line">{{ $event->description }}</div>
