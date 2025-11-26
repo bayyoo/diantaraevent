@@ -198,7 +198,29 @@ class PaymentController extends Controller
     {
         $token = strtoupper(substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, 10));
 
-        $participant->update(['attendance_token' => $token]);
+        // Simpan di kedua kolom (token lama & attendance_token) supaya konsisten di semua UI
+        $participant->update([
+            'attendance_token' => $token,
+            'token' => $token,
+        ]);
+
+        // Sinkronkan ke tabel event_attendances supaya token bisa dipakai oleh sistem absensi baru
+        try {
+            \App\Models\EventAttendance::updateOrCreate(
+                [
+                    'event_id' => $participant->event_id,
+                    'user_id' => $participant->user_id,
+                ],
+                [
+                    'attendance_token' => $token,
+                    'is_attended' => false,
+                ]
+            );
+        } catch (\Exception $e) {
+            Log::error('Failed syncing attendance token to EventAttendance: '.$e->getMessage(), [
+                'participant_id' => $participant->id,
+            ]);
+        }
 
         // Pastikan relasi event ter-load untuk kebutuhan email
         $participant->loadMissing('event');
