@@ -311,6 +311,10 @@ Route::prefix('diantaranexus')->name('diantaranexus.')->group(function () {
         Route::put('/organization', [App\Http\Controllers\Partner\PartnerOrganizationController::class, 'update'])
             ->name('organization.update');
 
+        // Attendance Hub for organizers (list events and open per-event attendance page)
+        Route::get('/attendance', [App\Http\Controllers\Partner\PartnerEventController::class, 'attendanceIndex'])
+            ->name('attendance.index');
+
         // Event Management Routes
         Route::prefix('events')->name('events.')->group(function () {
             Route::get('/', [App\Http\Controllers\Partner\PartnerEventController::class, 'index'])

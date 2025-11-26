@@ -92,6 +92,10 @@
                    class="nav-link text-sm {{ request()->routeIs('diantaranexus.events.*') ? 'active' : 'text-gray-600 hover:text-gray-900' }}">
                     EVENT
                 </a>
+                <a href="{{ route('diantaranexus.attendance.index') }}" 
+                   class="nav-link text-sm {{ request()->routeIs('diantaranexus.attendance.*') ? 'active' : 'text-gray-600 hover:text-gray-900' }}">
+                    ABSENSI
+                </a>
                 <a href="{{ route('diantaranexus.organization.show') }}" 
                    class="nav-link text-sm {{ request()->routeIs('diantaranexus.organization.*') ? 'active' : 'text-gray-600 hover:text-gray-900' }}">
                     ORGANISASI

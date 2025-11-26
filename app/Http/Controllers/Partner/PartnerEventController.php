@@ -50,6 +50,34 @@ class PartnerEventController extends Controller
     }
 
     /**
+     * Attendance hub: list events for organizers to open attendance screen.
+     */
+    public function attendanceIndex(Request $request)
+    {
+        $partner = Auth::guard('partner')->user();
+
+        $statusFilter = $request->query('status', 'tayang');
+
+        $query = $partner->events()->orderBy('start_date', 'asc');
+
+        // Default: show published (tayang) events; allow other filters if needed
+        if ($statusFilter === 'tayang') {
+            $query->where('status', 'published');
+        } elseif ($statusFilter === 'draft') {
+            $query->where('status', 'draft');
+        } elseif ($statusFilter === 'berakhir') {
+            $query->where('end_date', '<', now());
+        }
+
+        $events = $query->paginate(10);
+
+        return view('partner.attendance.index', [
+            'events' => $events,
+            'statusFilter' => $statusFilter,
+        ]);
+    }
+
+    /**
      * Show the form for creating a new event - Step 1: Basic Info
      */
     public function create()

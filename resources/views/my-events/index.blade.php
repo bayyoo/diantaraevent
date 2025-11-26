@@ -259,14 +259,6 @@
                                                 Lihat Detail
                                             </a>
 
-                                            <a href="{{ route('attendance.show', $participant->event) }}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors">
-                                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c1.657 0 3-1.343 3-3S13.657 5 12 5 9 6.343 9 8s1.343 3 3 3z"></path>
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20v-2a4 4 0 00-4-4H9a4 4 0 00-4 4v2"></path>
-                                                </svg>
-                                                Absensi / Input Token
-                                            </a>
-
                                             @php $certificate = $certificatesByEvent[$participant->event_id] ?? null; @endphp
                                             @if($certificate)
                                                 <a href="{{ route('certificates.download', $certificate->id) }}" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors">
