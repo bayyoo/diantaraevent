@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Event;
+use App\Models\PartnerEvent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -150,6 +151,19 @@ class EventController extends Controller
             $oldPath = public_path($event->flyer_path);
             if (file_exists($oldPath)) {
                 @unlink($oldPath);
+            }
+        }
+
+        // If this event was mirrored from a partner event, delete the partner event as well
+        if (!is_null($event->partner_id)) {
+            try {
+                PartnerEvent::where('slug', $event->slug)->delete();
+            } catch (\Throwable $e) {
+                \Log::warning('Failed deleting mirrored PartnerEvent when admin deleted Event: '.$e->getMessage(), [
+                    'event_id' => $event->id,
+                    'partner_id' => $event->partner_id,
+                    'slug' => $event->slug,
+                ]);
             }
         }
 
