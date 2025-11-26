@@ -270,17 +270,15 @@
                 </div>
             </div>
             
-            <!-- QR Code Section -->
+            <!-- Token/Booking Section (tanpa QR) -->
             <div class="qr-section">
-                <div class="qr-label">TERIMAKASIH & SELAMAT MENIKMATI</div>
-                
-                <div class="qr-code">
-                    {!! QrCode::size(130)->generate($participant->token) !!}
+                <div class="qr-label">TOKEN / BOOKING ID UNTUK ABSENSI</div>
+
+                <div class="qr-code" style="display:flex;align-items:center;justify-content:center;height:100%;font-size:14px;color:#111827;padding:8px;text-align:center;font-weight:700;letter-spacing:2px;">
+                    {{ strtoupper($participant->token) }}
                 </div>
-                
-                <div class="qr-label">Booking ID</div>
-                <div class="booking-id">{{ strtoupper($participant->token) }}</div>
-                
+
+                <div class="qr-label">Tunjukkan token ini saat check-in event</div>
                 <div class="status-badge">✓ VERIFIED</div>
             </div>
         </div>
