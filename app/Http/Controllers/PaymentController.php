@@ -203,9 +203,21 @@ class PaymentController extends Controller
         // Pastikan relasi event ter-load untuk kebutuhan email
         $participant->loadMissing('event');
 
-        // Kirim email token absensi menggunakan Laravel Mail (konfigurasi sama seperti OTP)
+        // Kirim email token absensi menggunakan Brevo HTTP API (konfigurasi sama seperti OTP)
         try {
-            \Mail::to($participant->email)->send(new EventRegistrationToken($participant, $participant->event));
+            $html = view('emails.event-registration-token', [
+                'participant' => $participant,
+                'event' => $participant->event,
+            ])->render();
+
+            /** @var BrevoEmailService $brevo */
+            $brevo = app(BrevoEmailService::class);
+            $brevo->sendEmail(
+                $participant->email,
+                $participant->name ?? $participant->email,
+                'Token Absensi - ' . $participant->event->title,
+                $html
+            );
         } catch (\Exception $e) {
             Log::error('Failed sending registration token email: ' . $e->getMessage(), [
                 'participant_id' => $participant->id,
@@ -227,11 +239,8 @@ class PaymentController extends Controller
         $participant = Participant::where('order_id', $orderId)->first();
 
         if ($participant) {
-            // Pastikan relasi event ter-load
+            // Pastikan relasi event ter-load agar informasi event bisa ditampilkan di halaman finish
             $participant->loadMissing('event');
-
-            // Selalu pastikan token absensi & email terkirim ketika user mendarat di halaman finish
-            $this->generateAttendanceToken($participant);
         }
 
         return view('payment.finish', compact('participant'));

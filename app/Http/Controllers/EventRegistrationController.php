@@ -6,6 +6,7 @@ use App\Mail\EventRegistrationToken;
 use App\Models\Event;
 use App\Models\Participant;
 use App\Models\EventAttendance;
+use App\Services\BrevoEmailService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -132,9 +133,21 @@ class EventRegistrationController extends Controller
             \Log::error('E-Ticket generation failed: ' . $e->getMessage());
         }
 
-        // Send token via email (use Laravel Mail so it follows the same config as OTP emails)
+        // Send token via email (use Brevo HTTP API so it follows the same config as other Brevo emails)
         try {
-            Mail::to($user->email)->send(new EventRegistrationToken($participant, $event));
+            $html = view('emails.event-registration-token', [
+                'participant' => $participant,
+                'event' => $event,
+            ])->render();
+
+            /** @var BrevoEmailService $brevo */
+            $brevo = app(BrevoEmailService::class);
+            $brevo->sendEmail(
+                $user->email,
+                $user->name ?? $user->email,
+                'Token Absensi - ' . $event->title,
+                $html
+            );
         } catch (\Exception $e) {
             \Log::error('Email sending failed: ' . $e->getMessage());
         }
