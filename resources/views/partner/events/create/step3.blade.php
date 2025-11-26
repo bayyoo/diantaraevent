@@ -323,7 +323,7 @@
                 <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center">
                     <div id="customCertPreview" class="mb-4">
                         @if($customPath)
-                            <img src="{{ asset($customPath) }}" alt="Custom certificate" class="mx-auto max-h-48 rounded-lg">
+                            <img src="{{ asset('storage/'.$customPath) }}" alt="Custom certificate" class="mx-auto max-h-48 rounded-lg">
                             <p class="text-sm text-gray-600 mt-2">Current custom template</p>
                         @else
                             <i class="fas fa-file-image text-4xl text-gray-300 mb-3"></i>

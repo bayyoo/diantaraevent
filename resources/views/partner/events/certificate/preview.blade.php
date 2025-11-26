@@ -22,8 +22,17 @@
                 $certLogoPath = $metadata['logo_path'] ?? null;
                 $defaultCertLogo = asset('images/diantara-nexus-logo.png');
                 $certLogoUrl = $certLogoPath ? asset('storage/'.$certLogoPath) : $defaultCertLogo;
+                $customPath = $event->custom_certificate_path ?? null;
             @endphp
-            @if ($template === 'template_b')
+            @if ($template === 'custom' && $customPath)
+                <div class="p-4 md:p-6">
+                    <div class="mb-4 text-sm text-gray-600">Preview menggunakan template custom yang kamu upload.</div>
+                    <div class="border border-gray-200 rounded-xl overflow-hidden bg-gray-50">
+                        <img src="{{ asset('storage/'.$customPath) }}" alt="Custom certificate" class="w-full max-h-[480px] object-contain bg-white">
+                    </div>
+                    <div class="mt-4 text-xs text-gray-500">Nama peserta dan tanda tangan dari ORGANISASI akan ditempel otomatis di atas template ini saat sertifikat di-generate.</div>
+                </div>
+            @elseif ($template === 'template_b')
                 {{-- Template B preview: blok warna di sudut, judul besar, nama oranye --}}
                 <div class="relative">
                     <div class="absolute inset-x-0 top-0 flex justify-between p-4">

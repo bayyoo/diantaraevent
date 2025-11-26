@@ -77,36 +77,6 @@
                         <i class="fas fa-calendar-alt w-5 text-lg"></i>
                         <span>Events</span>
                     </a>
-                    
-                    <a href="#" 
-                       class="sidebar-link flex items-center space-x-3 px-4 py-3.5 rounded-xl font-medium text-gray-700">
-                        <i class="fas fa-ticket-alt w-5 text-lg"></i>
-                        <span>Tickets</span>
-                    </a>
-                    
-                    <a href="#" 
-                       class="sidebar-link flex items-center space-x-3 px-4 py-3.5 rounded-xl font-medium text-gray-700">
-                        <i class="fas fa-users w-5 text-lg"></i>
-                        <span>Attendees</span>
-                    </a>
-                    
-                    <a href="#" 
-                       class="sidebar-link flex items-center space-x-3 px-4 py-3.5 rounded-xl font-medium text-gray-700">
-                        <i class="fas fa-chart-bar w-5 text-lg"></i>
-                        <span>Analytics</span>
-                    </a>
-                    
-                    <a href="#" 
-                       class="sidebar-link flex items-center space-x-3 px-4 py-3.5 rounded-xl font-medium text-gray-700">
-                        <i class="fas fa-percentage w-5 text-lg"></i>
-                        <span>Promotions</span>
-                    </a>
-                    
-                    <a href="#" 
-                       class="sidebar-link flex items-center space-x-3 px-4 py-3.5 rounded-xl font-medium text-gray-700">
-                        <i class="fas fa-qrcode w-5 text-lg"></i>
-                        <span>Check-in</span>
-                    </a>
                 </nav>
 
                 <!-- User Section -->
