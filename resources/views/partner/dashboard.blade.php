@@ -139,7 +139,7 @@
                             <!-- Event Image/Poster (style disamakan dengan page EVENT organizer) -->
                             <div class="aspect-w-16 aspect-h-9 bg-gradient-to-r from-red-500 to-orange-500 relative">
                                 @if($event->poster)
-                                    <img src="{{ Storage::url($event->poster) }}" alt="{{ $event->title }}" class="w-full h-full object-cover">
+                                    <img src="{{ asset($event->poster) }}" alt="{{ $event->title }}" class="w-full h-full object-cover">
                                 @else
                                     <div class="flex items-center justify-center text-white">
                                         <i class="fas fa-calendar text-4xl opacity-50"></i>

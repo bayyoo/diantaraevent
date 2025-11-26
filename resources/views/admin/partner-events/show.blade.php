@@ -83,11 +83,11 @@
                 <h3 class="font-semibold mb-3">Media</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     @if($event->poster)
-                        <img src="{{ Storage::url($event->poster) }}" class="rounded border" alt="Poster">
+                        <img src="{{ asset($event->poster) }}" class="rounded border" alt="Poster">
                     @endif
                     @if($event->banners)
                         @foreach(json_decode($event->banners, true) as $bn)
-                            <img src="{{ Storage::url($bn) }}" class="rounded border" alt="Banner">
+                            <img src="{{ asset($bn) }}" class="rounded border" alt="Banner">
                         @endforeach
                     @endif
                 </div>

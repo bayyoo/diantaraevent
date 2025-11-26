@@ -218,12 +218,12 @@
                     <!-- Event Image -->
                     <div class="bg-white rounded-lg shadow-sm overflow-hidden mb-4">
                         @if($event->poster)
-                            <img src="{{ Storage::url($event->poster) }}" alt="{{ $event->title }}" class="w-full h-64 object-cover">
+                            <img src="{{ asset($event->poster) }}" alt="{{ $event->title }}" class="w-full h-64 object-cover">
                         @else
-                            <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&h=600&fit=crop" alt="{{ $event->title }}" class="w-full h-64 object-cover">
+                            <img src="{{ asset('images/diantara-nexus-logo.png') }}" alt="{{ $event->title }}" class="w-full h-64 object-cover bg-gray-100">
                         @endif
-                        <button class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 text-sm font-medium transition-colors">View all pictures</button>
                     </div>
+                    <button class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 text-sm font-medium transition-colors">View all pictures</button>
 
                     <!-- Price & Booking -->
                     <div class="bg-white rounded-lg shadow-sm p-6">
