@@ -238,6 +238,10 @@
     </style>
 </head>
 <body>
+    @php
+        $displayToken = strtoupper($participant->attendance_token ?? $participant->token);
+    @endphp
+
     <div class="ticket-container">
         <!-- Decorative Elements -->
         <div class="decoration circle-1"></div>
@@ -282,8 +286,8 @@
             <div class="qr-section">
                 <div class="qr-label">TOKEN / BOOKING ID UNTUK ABSENSI</div>
 
-                <div class="qr-code" style="display:flex;align-items:center;justify-content:center;height:100%;font-size:14px;color:#111827;padding:8px;text-align:center;font-weight:700;letter-spacing:2px;">
-                    {{ strtoupper($participant->token) }}
+                <div class="qr-code" style="font-size:14px;color:#FFFFFF;text-align:center;font-weight:700;letter-spacing:2px;">
+                    {{ $displayToken }}
                 </div>
 
                 <div class="qr-label">Tunjukkan token ini saat check-in event</div>
