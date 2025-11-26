@@ -244,7 +244,7 @@
         
         <!-- Content -->
         <div class="content">
-            <div class="event-title">{{ $event->title }}</div>
+            <div class="event-title">{{ $participant->event->title }}</div>
             
             <div class="info-grid">
                 <div class="info-row">
@@ -255,18 +255,18 @@
                 <div class="info-row">
                     <div class="info-label">🏷️ Category</div>
                     <div class="info-value">
-                        <span class="category-badge">{{ strtoupper($event->category ?? 'GENERAL') }}</span>
+                        <span class="category-badge">{{ strtoupper($participant->event->category ?? 'GENERAL') }}</span>
                     </div>
                 </div>
                 
                 <div class="info-row">
                     <div class="info-label">📅 Date</div>
-                    <div class="info-value">{{ $event->event_date->format('d M Y, H:i') }} WIB</div>
+                    <div class="info-value">{{ $participant->event->event_date->format('d M Y, H:i') }} WIB</div>
                 </div>
                 
                 <div class="info-row">
                     <div class="info-label">📍 Location</div>
-                    <div class="info-value">{{ $event->location }}</div>
+                    <div class="info-value">{{ $participant->event->location }}</div>
                 </div>
             </div>
             
