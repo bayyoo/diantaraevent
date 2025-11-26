@@ -390,7 +390,43 @@ class PartnerEventController extends Controller
         $partner = Auth::guard('partner')->user();
         $event = $partner->events()->with(['tickets', 'organization'])->findOrFail($id);
 
-        return view('partner.events.show', compact('event'));
+        // Cari event publik yang di-mirror dari partner event ini (berdasarkan slug)
+        $publicEvent = Event::where('slug', $event->slug)->first();
+
+        $stats = [
+            'total_registrations' => 0,
+            'total_paid' => 0,
+            'total_attended' => 0,
+            'total_not_attended' => 0,
+        ];
+        $participants = collect();
+        $attendances = collect();
+
+        if ($publicEvent) {
+            // Ambil peserta & absensi untuk event publik ini
+            $participants = $publicEvent->participants()->get();
+
+            $attendances = \App\Models\Attendance::with('participant')
+                ->where('event_id', $publicEvent->id)
+                ->get();
+
+            $stats['total_registrations'] = $participants->count();
+            $stats['total_paid'] = $participants->where('payment_status', 'paid')->count();
+            $stats['total_attended'] = $attendances->count();
+
+            // Peserta yang bayar tapi belum tercatat hadir
+            $paidParticipantIds = $participants->where('payment_status', 'paid')->pluck('id');
+            $attendedParticipantIds = $attendances->pluck('participant_id');
+            $stats['total_not_attended'] = $paidParticipantIds->diff($attendedParticipantIds)->count();
+        }
+
+        return view('partner.events.show', [
+            'event' => $event,
+            'publicEvent' => $publicEvent,
+            'stats' => $stats,
+            'participants' => $participants,
+            'attendances' => $attendances,
+        ]);
     }
 
     /**

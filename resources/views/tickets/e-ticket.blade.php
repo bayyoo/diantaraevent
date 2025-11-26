@@ -19,17 +19,19 @@
             width: 210mm;
             height: 297mm;
             position: relative;
+            background: #F3F4F6;
         }
         
         .ticket-container {
             width: 180mm;
             margin: 20mm auto;
-            background: linear-gradient(135deg, #E8B4F9 0%, #C084FC 50%, #7C3AED 100%);
+            background: #FFFFFF;
             border-radius: 20px;
             padding: 8mm;
-            box-shadow: 0 10px 40px rgba(124, 58, 237, 0.3);
+            box-shadow: 0 16px 40px rgba(15, 23, 42, 0.15);
             position: relative;
             overflow: hidden;
+            border: 1px solid #E5E7EB;
         }
         
         /* Decorative elements */
@@ -41,7 +43,7 @@
         .circle-1 {
             width: 150px;
             height: 150px;
-            background: #FFD700;
+            background: #C4B5FD;
             border-radius: 50%;
             top: -50px;
             right: -50px;
@@ -50,7 +52,7 @@
         .circle-2 {
             width: 100px;
             height: 100px;
-            background: #90EE90;
+            background: #FDE68A;
             border-radius: 50%;
             bottom: 30px;
             left: 20px;
@@ -61,16 +63,16 @@
             height: 0;
             border-left: 60px solid transparent;
             border-right: 60px solid transparent;
-            border-bottom: 100px solid #FFB6C1;
+            border-bottom: 100px solid #F9A8D4;
             top: 100px;
             right: 80px;
         }
         
         /* Header */
         .header {
-            background: linear-gradient(135deg, #7C3AED 0%, #9D4EDD 100%);
-            padding: 15px 20px;
-            border-radius: 12px;
+            background: linear-gradient(135deg, #4C1D95 0%, #7C3AED 50%, #A855F7 100%);
+            padding: 18px 24px;
+            border-radius: 16px;
             text-align: center;
             margin-bottom: 20px;
             position: relative;
@@ -78,12 +80,12 @@
         }
         
         .logo {
-            font-size: 32px;
+            font-size: 30px;
             font-weight: 900;
             color: #FFFFFF;
             letter-spacing: 3px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-            margin-bottom: 5px;
+            text-shadow: 0 4px 12px rgba(15,23,42,0.4);
+            margin-bottom: 6px;
         }
         
         .header-subtitle {
@@ -96,8 +98,8 @@
         /* Content */
         .content {
             background: #FFFFFF;
-            border-radius: 15px;
-            padding: 25px;
+            border-radius: 16px;
+            padding: 28px 26px 24px 26px;
             position: relative;
             z-index: 10;
         }
@@ -142,11 +144,11 @@
         
         .category-badge {
             display: inline-block;
-            background: linear-gradient(135deg, #90EE90 0%, #32CD32 100%);
+            background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);
             color: #FFFFFF;
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-size: 14px;
+            padding: 6px 18px;
+            border-radius: 999px;
+            font-size: 12px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -154,58 +156,64 @@
         
         /* QR Code Section */
         .qr-section {
-            background: #FFEB3B;
-            border-radius: 15px;
-            padding: 20px;
+            background: #F9FAFB;
+            border-radius: 16px;
+            padding: 20px 22px;
             text-align: center;
-            margin-top: 20px;
-            border: 3px dashed #333;
+            margin-top: 22px;
+            border: 2px dashed #E5E7EB;
         }
         
         .qr-label {
             font-size: 11px;
-            color: #333;
+            color: #4B5563;
             margin-bottom: 10px;
             font-weight: 600;
         }
         
         .qr-code {
-            width: 150px;
-            height: 150px;
-            margin: 10px auto;
-            background: #FFFFFF;
-            padding: 10px;
-            border-radius: 10px;
+            width: 180px;
+            height: 70px;
+            margin: 10px auto 0 auto;
+            background: #111827;
+            padding: 10px 14px;
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .booking-id {
             font-size: 16px;
             font-weight: 800;
-            color: #333;
-            margin-top: 10px;
-            letter-spacing: 1px;
+            color: #111827;
+            margin-top: 12px;
+            letter-spacing: 2px;
         }
         
         .status-badge {
             display: inline-block;
-            background: #4CAF50;
-            color: #FFFFFF;
-            padding: 5px 15px;
-            border-radius: 15px;
+            background: rgba(16, 185, 129, 0.12);
+            color: #059669;
+            padding: 5px 16px;
+            border-radius: 999px;
             font-size: 10px;
             font-weight: 700;
-            margin-top: 8px;
+            margin-top: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         
         /* Footer */
         .footer {
             text-align: center;
-            margin-top: 20px;
-            padding: 15px;
-            background: rgba(255,255,255,0.9);
-            border-radius: 10px;
+            margin-top: 18px;
+            padding: 14px;
+            background: rgba(249,250,251,0.95);
+            border-radius: 12px;
             position: relative;
             z-index: 10;
+            border: 1px dashed #E5E7EB;
         }
         
         .footer-text {

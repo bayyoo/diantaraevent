@@ -11,14 +11,33 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-2 space-y-6">
             <div class="bg-white p-6 rounded border">
-                <div class="flex items-start justify-between">
-                    <div>
+                <div class="flex items-start justify-between gap-6">
+                    <div class="flex-1">
                         <h1 class="text-2xl font-bold">{{ $event->title }}</h1>
                         <div class="text-sm text-gray-600 mt-1">{{ $event->organization->name ?? '-' }} • {{ $event->partner->name ?? '-' }}</div>
+                        <div class="mt-2 text-xs text-gray-500 space-x-2">
+                            <span>{{ \Carbon\Carbon::parse($event->start_date)->format('d M Y H:i') }} - {{ \Carbon\Carbon::parse($event->end_date)->format('d M Y H:i') }}</span>
+                            <span>{{ $event->location }}</span>
+                        </div>
                     </div>
-                    <div>
+                    <div class="flex flex-col items-end space-y-2">
                         @php $status = strtoupper($event->status); @endphp
                         <span class="inline-flex items-center px-2 py-1 rounded text-xs font-semibold {{ $event->status === 'pending_review' ? 'bg-yellow-100 text-yellow-800' : ($event->status === 'published' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800') }}">{{ $status }}</span>
+
+                        @php
+                            $primaryMedia = null;
+                            if ($event->poster) {
+                                $primaryMedia = $event->poster;
+                            } elseif (is_array($event->banners) && count($event->banners)) {
+                                $primaryMedia = $event->banners[0];
+                            }
+                        @endphp
+
+                        @if($primaryMedia)
+                            <div class="mt-1 w-40 h-24 border rounded overflow-hidden bg-gray-50">
+                                <img src="{{ Storage::url($primaryMedia) }}" alt="Poster" class="w-full h-full object-cover">
+                            </div>
+                        @endif
                     </div>
                 </div>
                 <div class="mt-4 text-gray-700 whitespace-pre-line">{{ $event->description }}</div>

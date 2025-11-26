@@ -18,7 +18,7 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Left: Event Main Info -->
+        <!-- Left: Event Main Info + Dashboard Peserta -->
         <div class="lg:col-span-2 space-y-6">
             <div class="bg-white rounded-xl border border-gray-200 p-6">
                 <div class="flex items-start justify-between">
@@ -39,6 +39,92 @@
                     <p class="text-gray-700">{!! nl2br(e($event->description)) !!}</p>
                 </div>
             </div>
+
+            {{-- Dashboard Peserta & Kehadiran (jika sudah ada event publik dan peserta) --}}
+            @if($publicEvent)
+            <div class="bg-white rounded-xl border border-gray-200 p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Dashboard Peserta & Kehadiran</h3>
+                    <div class="text-xs text-gray-500">Event ID Publik: {{ $publicEvent->id }}</div>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="border rounded-lg px-3 py-2 bg-gray-50">
+                        <div class="text-xs text-gray-500">Total Registrasi</div>
+                        <div class="text-xl font-semibold text-gray-900">{{ $stats['total_registrations'] }}</div>
+                    </div>
+                    <div class="border rounded-lg px-3 py-2 bg-gray-50">
+                        <div class="text-xs text-gray-500">Sudah Bayar</div>
+                        <div class="text-xl font-semibold text-emerald-700">{{ $stats['total_paid'] }}</div>
+                    </div>
+                    <div class="border rounded-lg px-3 py-2 bg-gray-50">
+                        <div class="text-xs text-gray-500">Hadir (Absensi)</div>
+                        <div class="text-xl font-semibold text-blue-700">{{ $stats['total_attended'] }}</div>
+                    </div>
+                    <div class="border rounded-lg px-3 py-2 bg-gray-50">
+                        <div class="text-xs text-gray-500">Belum Hadir</div>
+                        <div class="text-xl font-semibold text-amber-700">{{ $stats['total_not_attended'] }}</div>
+                    </div>
+                </div>
+
+                <div class="border rounded-lg overflow-hidden">
+                    <div class="px-3 py-2 bg-gray-50 border-b flex items-center justify-between">
+                        <span class="text-sm font-medium text-gray-800">Daftar Peserta</span>
+                        <span class="text-xs text-gray-500">{{ $participants->count() }} entri</span>
+                    </div>
+                    <div class="overflow-x-auto max-h-80">
+                        <table class="min-w-full text-xs">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-3 py-2 text-left font-semibold text-gray-600">Nama</th>
+                                    <th class="px-3 py-2 text-left font-semibold text-gray-600">Email</th>
+                                    <th class="px-3 py-2 text-left font-semibold text-gray-600">Status Bayar</th>
+                                    <th class="px-3 py-2 text-left font-semibold text-gray-600">Status Hadir</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                @forelse($participants as $p)
+                                    @php
+                                        $attendance = $attendances->firstWhere('participant_id', $p->id);
+                                    @endphp
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 align-top">
+                                            <div class="font-medium text-gray-900">{{ $p->name }}</div>
+                                            <div class="text-[11px] text-gray-500">Order: {{ $p->order_id ?? '-' }}</div>
+                                        </td>
+                                        <td class="px-3 py-2 align-top text-gray-700">{{ $p->email }}</td>
+                                        <td class="px-3 py-2 align-top">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold
+                                                {{ $p->payment_status === 'paid' ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-700' }}">
+                                                {{ strtoupper($p->payment_status ?? 'unpaid') }}
+                                            </span>
+                                        </td>
+                                        <td class="px-3 py-2 align-top">
+                                            @if($attendance)
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-100 text-blue-800">
+                                                    HADIR
+                                                </span>
+                                                <div class="text-[11px] text-gray-500 mt-0.5">
+                                                    {{ $attendance->attended_at?->format('d M Y H:i') }}
+                                                </div>
+                                            @else
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-100 text-amber-800">
+                                                    BELUM HADIR
+                                                </span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="4" class="px-3 py-4 text-center text-xs text-gray-500">Belum ada peserta yang terdaftar.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            @endif
 
             @if($event->poster || $event->banners)
             <div class="bg-white rounded-xl border border-gray-200 p-6">
